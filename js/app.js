@@ -40,12 +40,15 @@ fileInput.addEventListener('change', async (e) => {
     await new Promise((r) => setTimeout(r, 50));
 
     Spectrogram.compute();
+    spectrogramSection.classList.add('visible');
+
+    // Wait one frame so the section is visible and wrapper.clientWidth is valid
+    await new Promise((r) => requestAnimationFrame(r));
+
     Spectrogram.render();
     Trim.updateUI();
     Spectrogram.updateFreqAxis();
     Spectrogram.updateTimeBar();
-
-    spectrogramSection.classList.add('visible');
     UI.hideLoading();
   } catch (err) {
     UI.hideLoading();

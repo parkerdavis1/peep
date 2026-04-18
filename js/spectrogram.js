@@ -81,7 +81,7 @@ function render() {
 
   const cols = State.spectrogramCols;
   const rows = State.spectrogramRows;
-  const canvasWidth = Math.max(cols, wrapper.clientWidth * State.zoomLevel);
+  const canvasWidth = wrapper.clientWidth * State.zoomLevel;
 
   canvas.width = cols;
   canvas.height = rows;
