@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>WAV Sound Editor</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --text: #222;
+  --text-secondary: #666;
+  --accent: #2a6dd4;
+  --accent-hover: #1d5ab8;
+  --border: #ddd;
+  --trim-overlay: rgba(200, 200, 200, 0.55);
+  --handle-color: #d44;
+  --cursor-color: #2a6dd4;
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.4;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 12px;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 0 12px;
+}
+
+/* File input */
+.file-section {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.file-label {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.file-label:active { background: var(--accent-hover); }
+.file-label input { display: none; }
+
+.file-info {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Spectrogram */
+.spectrogram-section {
+  display: none;
+  margin-bottom: 12px;
+}
+.spectrogram-section.visible { display: block; }
+
+.spectrogram-wrapper {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  touch-action: pan-x;
+  -webkit-overflow-scrolling: touch;
+}
+
+.spectrogram-inner {
+  position: relative;
+  height: 200px;
+  min-width: 100%;
+}
+
+canvas#spectrogram {
+  display: block;
+  height: 200px;
+  image-rendering: pixelated;
+}
+
+/* Frequency axis labels */
+.freq-axis {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.freq-label {
+  position: absolute;
+  left: 4px;
+  font-size: 10px;
+  color: rgba(0,0,0,0.5);
+  text-shadow: 0 0 3px rgba(255,255,255,0.8);
+  transform: translateY(-50%);
+}
+
+/* Trim overlays and handles */
+.trim-overlay-left, .trim-overlay-right {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--trim-overlay);
+  pointer-events: none;
+}
+.trim-overlay-left { left: 0; }
+.trim-overlay-right { right: 0; }
+
+.trim-handle {
+  position: absolute;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--handle-color);
+  cursor: ew-resize;
+  z-index: 10;
+  touch-action: none;
+}
+.trim-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+}
+.trim-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 14px;
+  height: 28px;
+  border-radius: 3px;
+  border: 2px solid var(--handle-color);
+  background: rgba(255,255,255,0.85);
+}
+
+.playback-cursor {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--cursor-color);
+  pointer-events: none;
+  z-index: 5;
+  display: none;
+}
+
+/* Time labels under spectrogram */
+.time-bar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+  padding: 2px 4px;
+}
+
+/* Zoom controls */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.zoom-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+.zoom-btn:active { background: #eee; }
+.zoom-level {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Playback controls */
+.playback-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 10px 0;
+}
+
+.play-btn {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.play-btn:active { background: var(--accent-hover); }
+
+.time-display {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Settings panel */
+.settings {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+  gap: 10px;
+}
+.setting-row:last-child { border-bottom: none; }
+
+.setting-label {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-value {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 50px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px;
+  height: 6px;
+  background: #ddd;
+  border-radius: 3px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+/* Save button */
+.save-section {
+  text-align: center;
+  margin: 16px 0;
+}
+
+.save-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: #2a8c4a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.save-btn:active { background: #1f7a3c; }
+.save-btn:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.loading-overlay.visible {
+  display: flex;
+}
+.loading-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 32px;
+  text-align: center;
+  font-size: 15px;
+}
+.loading-box .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ddd;
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>WAV Sound Editor</h1>
+
+  <div class="file-section">
+    <label class="file-label">
+      Open WAV File
+      <input type="file" id="fileInput" accept=".wav,audio/wav">
+    </label>
+    <div class="file-info" id="fileInfo"></div>
+  </div>
+
+  <div class="spectrogram-section" id="spectrogramSection">
+    <div class="spectrogram-wrapper" id="spectrogramWrapper">
+      <div class="spectrogram-inner" id="spectrogramInner">
+        <canvas id="spectrogram"></canvas>
+        <div class="trim-overlay-left" id="trimLeft"></div>
+        <div class="trim-overlay-right" id="trimRight"></div>
+        <div class="trim-handle" id="handleLeft"></div>
+        <div class="trim-handle" id="handleRight"></div>
+        <div class="playback-cursor" id="playbackCursor"></div>
+        <div class="freq-axis" id="freqAxis"></div>
+      </div>
+    </div>
+    <div class="time-bar">
+      <span id="timeStart">0:00.0</span>
+      <span id="timeEnd">0:00.0</span>
+    </div>
+
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoomOut">&minus;</button>
+      <span class="zoom-level" id="zoomLevel">1x</span>
+      <button class="zoom-btn" id="zoomIn">+</button>
+    </div>
+
+    <div class="playback-controls">
+      <button class="play-btn" id="playBtn">&#9654;</button>
+      <div class="time-display" id="timeDisplay">0:00.0 / 0:00.0</div>
+    </div>
+
+    <div class="settings">
+      <div class="setting-row">
+        <span class="setting-label">High-pass filter</span>
+        <div class="setting-control">
+          <input type="checkbox" id="hpEnabled" checked>
+          <input type="range" id="hpFreq" min="50" max="500" value="100" step="10">
+          <span class="setting-value" id="hpValue">100 Hz</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Normalize to &minus;3 dB</span>
+        <div class="setting-control">
+          <input type="checkbox" id="normalizeEnabled" checked>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Fade in / out</span>
+        <div class="setting-control">
+          <span class="setting-value">1.0 s</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="save-section">
+      <button class="save-btn" id="saveBtn">Process &amp; Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div id="loadingText">Processing...</div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ---- State ----
+  let audioCtx = null;
+  let audioBuffer = null;      // original decoded buffer
+  let fileName = '';
+  let isPlaying = false;
+  let sourceNode = null;
+  let filterNode = null;
+  let playStartTime = 0;
+  let playOffset = 0;
+  let animFrameId = null;
+
+  // Trim state (in fractions 0-1 of total duration)
+  let trimStart = 0;
+  let trimEnd = 1;
+
+  // Zoom
+  let zoomLevel = 1;
+  const MAX_ZOOM = 32;
+
+  // Spectrogram data (pre-computed)
+  let spectrogramData = null; // Float32Array[][] of magnitudes
+  let spectrogramCols = 0;
+  let spectrogramRows = 0;
+
+  // ---- DOM refs ----
+  const fileInput = document.getElementById('fileInput');
+  const fileInfo = document.getElementById('fileInfo');
+  const spectrogramSection = document.getElementById('spectrogramSection');
+  const spectrogramWrapper = document.getElementById('spectrogramWrapper');
+  const spectrogramInner = document.getElementById('spectrogramInner');
+  const canvas = document.getElementById('spectrogram');
+  const ctx = canvas.getContext('2d');
+  const trimLeftOverlay = document.getElementById('trimLeft');
+  const trimRightOverlay = document.getElementById('trimRight');
+  const handleLeft = document.getElementById('handleLeft');
+  const handleRight = document.getElementById('handleRight');
+  const playbackCursor = document.getElementById('playbackCursor');
+  const freqAxis = document.getElementById('freqAxis');
+  const timeStartEl = document.getElementById('timeStart');
+  const timeEndEl = document.getElementById('timeEnd');
+  const zoomLevelEl = document.getElementById('zoomLevel');
+  const zoomInBtn = document.getElementById('zoomIn');
+  const zoomOutBtn = document.getElementById('zoomOut');
+  const playBtn = document.getElementById('playBtn');
+  const timeDisplay = document.getElementById('timeDisplay');
+  const hpEnabled = document.getElementById('hpEnabled');
+  const hpFreq = document.getElementById('hpFreq');
+  const hpValue = document.getElementById('hpValue');
+  const normalizeEnabled = document.getElementById('normalizeEnabled');
+  const saveBtn = document.getElementById('saveBtn');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+
+  // ---- Utility ----
+  function formatTime(sec) {
+    if (!isFinite(sec)) return '0:00.0';
+    const m = Math.floor(sec / 60);
+    const s = sec - m * 60;
+    return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1);
+  }
+
+  function showLoading(text) {
+    loadingText.textContent = text || 'Processing...';
+    loadingOverlay.classList.add('visible');
+  }
+
+  function hideLoading() {
+    loadingOverlay.classList.remove('visible');
+  }
+
+  function ensureAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  // ---- File Loading ----
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    ensureAudioCtx();
+    stopPlayback();
+
+    fileName = file.name.replace(/\.wav$/i, '');
+    fileInfo.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
+    showLoading('Decoding audio...');
+
+    try {
+      const arrayBuf = await file.arrayBuffer();
+      audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+
+      trimStart = 0;
+      trimEnd = 1;
+      zoomLevel = 1;
+
+      showLoading('Computing spectrogram...');
+      // Yield to allow UI update
+      await new Promise(r => setTimeout(r, 50));
+      computeSpectrogram();
+      renderSpectrogram();
+      updateTrimUI();
+      updateFreqAxis();
+      updateTimeBar();
+
+      spectrogramSection.classList.add('visible');
+      hideLoading();
+    } catch (err) {
+      hideLoading();
+      alert('Error loading file: ' + err.message);
+      console.error(err);
+    }
+  });
+
+  // ---- Spectrogram Computation ----
+  function computeSpectrogram() {
+    const fftSize = 2048;
+    const hop = 512;
+    const sr = audioBuffer.sampleRate;
+    const length = audioBuffer.length;
+
+    // Mix to mono for spectrogram display
+    const mono = new Float32Array(length);
+    const numCh = audioBuffer.numberOfChannels;
+    for (let ch = 0; ch < numCh; ch++) {
+      const chData = audioBuffer.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        mono[i] += chData[i] / numCh;
+      }
+    }
+
+    const numCols = Math.floor((length - fftSize) / hop) + 1;
+    // Only keep bins up to 10kHz
+    const maxFreq = 10000;
+    const binHz = sr / fftSize;
+    const maxBin = Math.min(Math.ceil(maxFreq / binHz), fftSize / 2);
+
+    // Hann window
+    const window = new Float32Array(fftSize);
+    for (let i = 0; i < fftSize; i++) {
+      window[i] = 0.5 * (1 - Math.cos(2 * Math.PI * i / (fftSize - 1)));
+    }
+
+    // We'll store magnitudes as a flat array: cols x rows
+    const data = new Float32Array(numCols * maxBin);
+
+    // Temp arrays for FFT
+    const real = new Float32Array(fftSize);
+    const imag = new Float32Array(fftSize);
+
+    for (let col = 0; col < numCols; col++) {
+      const offset = col * hop;
+
+      // Window the signal
+      for (let i = 0; i < fftSize; i++) {
+        real[i] = mono[offset + i] * window[i];
+        imag[i] = 0;
+      }
+
+      // In-place FFT
+      fft(real, imag, fftSize);
+
+      // Compute magnitude in dB
+      for (let bin = 0; bin < maxBin; bin++) {
+        const mag = Math.sqrt(real[bin] * real[bin] + imag[bin] * imag[bin]);
+        // dB, floor at -100
+        const db = mag > 0 ? 20 * Math.log10(mag) : -100;
+        data[col * maxBin + bin] = db;
+      }
+    }
+
+    spectrogramData = data;
+    spectrogramCols = numCols;
+    spectrogramRows = maxBin;
+  }
+
+  // Cooley-Tukey FFT (radix-2, in-place)
+  function fft(real, imag, n) {
+    // Bit-reversal permutation
+    let j = 0;
+    for (let i = 0; i < n - 1; i++) {
+      if (i < j) {
+        let tmp = real[i]; real[i] = real[j]; real[j] = tmp;
+        tmp = imag[i]; imag[i] = imag[j]; imag[j] = tmp;
+      }
+      let k = n >> 1;
+      while (k <= j) { j -= k; k >>= 1; }
+      j += k;
+    }
+
+    // FFT butterfly
+    for (let size = 2; size <= n; size *= 2) {
+      const halfSize = size / 2;
+      const angle = -2 * Math.PI / size;
+      const wR = Math.cos(angle);
+      const wI = Math.sin(angle);
+
+      for (let i = 0; i < n; i += size) {
+        let curR = 1, curI = 0;
+        for (let k = 0; k < halfSize; k++) {
+          const idx1 = i + k;
+          const idx2 = i + k + halfSize;
+          const tR = curR * real[idx2] - curI * imag[idx2];
+          const tI = curR * imag[idx2] + curI * real[idx2];
+          real[idx2] = real[idx1] - tR;
+          imag[idx2] = imag[idx1] - tI;
+          real[idx1] += tR;
+          imag[idx1] += tI;
+          const newCurR = curR * wR - curI * wI;
+          curI = curR * wI + curI * wR;
+          curR = newCurR;
+        }
+      }
+    }
+  }
+
+  // ---- Spectrogram Rendering ----
+  function renderSpectrogram() {
+    if (!spectrogramData) return;
+
+    const canvasWidth = Math.max(spectrogramCols, spectrogramWrapper.clientWidth * zoomLevel);
+    const canvasHeight = 200;
+    const devicePixelRatio = 1; // use 1:1 for spectrogram pixel mapping
+
+    canvas.width = spectrogramCols;
+    canvas.height = spectrogramRows;
+    canvas.style.width = canvasWidth + 'px';
+
+    spectrogramInner.style.width = canvasWidth + 'px';
+
+    // Find global min/max dB for color mapping
+    let minDb = 0, maxDb = -200;
+    for (let i = 0; i < spectrogramData.length; i++) {
+      const v = spectrogramData[i];
+      if (v < minDb) minDb = v;
+      if (v > maxDb) maxDb = v;
+    }
+    // Clamp range
+    if (minDb < -100) minDb = -100;
+    if (maxDb < -10) maxDb = -10;
+    const range = maxDb - minDb || 1;
+
+    const imgData = ctx.createImageData(spectrogramCols, spectrogramRows);
+    const pixels = imgData.data;
+
+    for (let col = 0; col < spectrogramCols; col++) {
+      for (let row = 0; row < spectrogramRows; row++) {
+        const db = spectrogramData[col * spectrogramRows + row];
+        // Normalize 0 (silence/white) to 1 (loud/black)
+        let norm = (db - minDb) / range;
+        if (norm < 0) norm = 0;
+        if (norm > 1) norm = 1;
+
+        // Greyscale: white=0, black=1
+        const grey = Math.round((1 - norm) * 255);
+
+        // Flip Y: low freq at bottom
+        const y = spectrogramRows - 1 - row;
+        const idx = (y * spectrogramCols + col) * 4;
+        pixels[idx] = grey;
+        pixels[idx + 1] = grey;
+        pixels[idx + 2] = grey;
+        pixels[idx + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+
+    zoomLevelEl.textContent = zoomLevel + 'x';
+  }
+
+  function updateFreqAxis() {
+    if (!audioBuffer) return;
+    freqAxis.innerHTML = '';
+    const sr = audioBuffer.sampleRate;
+    const maxFreq = Math.min(10000, sr / 2);
+    const ticks = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000];
+
+    for (const freq of ticks) {
+      if (freq > maxFreq) break;
+      const frac = freq / maxFreq;
+      const pct = (1 - frac) * 100;
+      const label = document.createElement('div');
+      label.className = 'freq-label';
+      label.style.top = pct + '%';
+      label.textContent = (freq / 1000) + 'k';
+      freqAxis.appendChild(label);
+    }
+  }
+
+  function updateTimeBar() {
+    if (!audioBuffer) return;
+    const dur = audioBuffer.duration;
+    // Show visible time range based on scroll position and zoom
+    const wrapperWidth = spectrogramWrapper.clientWidth;
+    const totalWidth = parseFloat(spectrogramInner.style.width) || wrapperWidth;
+    const scrollLeft = spectrogramWrapper.scrollLeft;
+    const visStart = (scrollLeft / totalWidth) * dur;
+    const visEnd = ((scrollLeft + wrapperWidth) / totalWidth) * dur;
+    timeStartEl.textContent = formatTime(visStart);
+    timeEndEl.textContent = formatTime(visEnd);
+  }
+
+  spectrogramWrapper.addEventListener('scroll', updateTimeBar);
+
+  // ---- Zoom ----
+  zoomInBtn.addEventListener('click', () => {
+    if (zoomLevel >= MAX_ZOOM) return;
+    const oldZoom = zoomLevel;
+    zoomLevel = Math.min(zoomLevel * 2, MAX_ZOOM);
+    applyZoom(oldZoom);
+  });
+
+  zoomOutBtn.addEventListener('click', () => {
+    if (zoomLevel <= 1) return;
+    const oldZoom = zoomLevel;
+    zoomLevel = Math.max(zoomLevel / 2, 1);
+    applyZoom(oldZoom);
+  });
+
+  function applyZoom(oldZoom) {
+    const wrapperWidth = spectrogramWrapper.clientWidth;
+    const oldScroll = spectrogramWrapper.scrollLeft;
+    const oldTotal = wrapperWidth * oldZoom;
+    // Center of current view as fraction
+    const centerFrac = (oldScroll + wrapperWidth / 2) / oldTotal;
+
+    renderSpectrogram();
+    updateTrimUI();
+
+    const newTotal = wrapperWidth * zoomLevel;
+    spectrogramWrapper.scrollLeft = centerFrac * newTotal - wrapperWidth / 2;
+    updateTimeBar();
+  }
+
+  // ---- Trim Handles ----
+  function updateTrimUI() {
+    if (!audioBuffer) return;
+    const totalWidth = parseFloat(spectrogramInner.style.width) || spectrogramWrapper.clientWidth;
+
+    const leftPx = trimStart * totalWidth;
+    const rightPx = trimEnd * totalWidth;
+
+    trimLeftOverlay.style.width = leftPx + 'px';
+    trimRightOverlay.style.width = (totalWidth - rightPx) + 'px';
+
+    handleLeft.style.left = (leftPx - 2) + 'px';
+    handleRight.style.left = (rightPx - 2) + 'px';
+  }
+
+  // Drag logic
+  let dragging = null; // 'left' | 'right' | null
+
+  function getPointerFrac(clientX) {
+    const rect = spectrogramInner.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const totalWidth = parseFloat(spectrogramInner.style.width) || spectrogramWrapper.clientWidth;
+    return Math.max(0, Math.min(1, x / totalWidth));
+  }
+
+  function onDragStart(which, e) {
+    e.preventDefault();
+    dragging = which;
+  }
+
+  // Pointer events for handles
+  handleLeft.addEventListener('pointerdown', (e) => {
+    handleLeft.setPointerCapture(e.pointerId);
+    onDragStart('left', e);
+  });
+  handleRight.addEventListener('pointerdown', (e) => {
+    handleRight.setPointerCapture(e.pointerId);
+    onDragStart('right', e);
+  });
+
+  document.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const frac = getPointerFrac(e.clientX);
+    const minGap = 0.005; // minimum trim region
+    if (dragging === 'left') {
+      trimStart = Math.min(frac, trimEnd - minGap);
+    } else {
+      trimEnd = Math.max(frac, trimStart + minGap);
+    }
+    updateTrimUI();
+  });
+
+  document.addEventListener('pointerup', () => {
+    dragging = null;
+  });
+
+  // ---- Playback ----
+  playBtn.addEventListener('click', () => {
+    ensureAudioCtx();
+    if (isPlaying) {
+      stopPlayback();
+    } else {
+      startPlayback();
+    }
+  });
+
+  function startPlayback() {
+    if (!audioBuffer) return;
+
+    stopPlayback();
+    ensureAudioCtx();
+
+    const dur = audioBuffer.duration;
+    const startSec = trimStart * dur;
+    const endSec = trimEnd * dur;
+    const regionDur = endSec - startSec;
+
+    sourceNode = audioCtx.createBufferSource();
+    sourceNode.buffer = audioBuffer;
+
+    // Apply HP filter for preview
+    let lastNode = sourceNode;
+    if (hpEnabled.checked) {
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'highpass';
+      filterNode.frequency.value = parseFloat(hpFreq.value);
+      filterNode.Q.value = 0.707;
+      lastNode.connect(filterNode);
+      lastNode = filterNode;
+    }
+
+    lastNode.connect(audioCtx.destination);
+
+    sourceNode.start(0, startSec, regionDur);
+    playStartTime = audioCtx.currentTime;
+    playOffset = startSec;
+    isPlaying = true;
+    playBtn.innerHTML = '&#9646;&#9646;';
+
+    sourceNode.onended = () => {
+      if (isPlaying) stopPlayback();
+    };
+
+    playbackCursor.style.display = 'block';
+    animatePlayback();
+  }
+
+  function stopPlayback() {
+    isPlaying = false;
+    playBtn.innerHTML = '&#9654;';
+    playbackCursor.style.display = 'none';
+    if (animFrameId) {
+      cancelAnimationFrame(animFrameId);
+      animFrameId = null;
+    }
+    if (sourceNode) {
+      try { sourceNode.stop(); } catch(e) {}
+      try { sourceNode.disconnect(); } catch(e) {}
+      sourceNode = null;
+    }
+    if (filterNode) {
+      try { filterNode.disconnect(); } catch(e) {}
+      filterNode = null;
+    }
+  }
+
+  function animatePlayback() {
+    if (!isPlaying) return;
+
+    const elapsed = audioCtx.currentTime - playStartTime;
+    const currentSec = playOffset + elapsed;
+    const dur = audioBuffer.duration;
+    const frac = currentSec / dur;
+
+    // Update cursor position
+    const totalWidth = parseFloat(spectrogramInner.style.width) || spectrogramWrapper.clientWidth;
+    playbackCursor.style.left = (frac * totalWidth) + 'px';
+
+    // Update time display
+    const regionStart = trimStart * dur;
+    const regionEnd = trimEnd * dur;
+    const regionElapsed = currentSec - regionStart;
+    const regionDur = regionEnd - regionStart;
+    timeDisplay.textContent = formatTime(regionElapsed) + ' / ' + formatTime(regionDur);
+
+    // Auto-scroll to keep cursor visible
+    const cursorPx = frac * totalWidth;
+    const wrapperWidth = spectrogramWrapper.clientWidth;
+    const scrollLeft = spectrogramWrapper.scrollLeft;
+    if (cursorPx < scrollLeft || cursorPx > scrollLeft + wrapperWidth) {
+      spectrogramWrapper.scrollLeft = cursorPx - wrapperWidth / 3;
+    }
+
+    animFrameId = requestAnimationFrame(animatePlayback);
+  }
+
+  // ---- Settings ----
+  hpFreq.addEventListener('input', () => {
+    hpValue.textContent = hpFreq.value + ' Hz';
+    // Update live filter if playing
+    if (filterNode) {
+      filterNode.frequency.value = parseFloat(hpFreq.value);
+    }
+  });
+
+  // ---- Process & Save ----
+  saveBtn.addEventListener('click', async () => {
+    if (!audioBuffer) return;
+    ensureAudioCtx();
+    stopPlayback();
+    showLoading('Processing audio...');
+    await new Promise(r => setTimeout(r, 50));
+
+    try {
+      const processed = await processAudio();
+      const wavBlob = encodeWAV(processed);
+      downloadBlob(wavBlob, fileName + '_edited.wav');
+      hideLoading();
+    } catch (err) {
+      hideLoading();
+      alert('Processing error: ' + err.message);
+      console.error(err);
+    }
+  });
+
+  async function processAudio() {
+    const sr = audioBuffer.sampleRate;
+    const dur = audioBuffer.duration;
+    const numCh = audioBuffer.numberOfChannels;
+
+    const startSec = trimStart * dur;
+    const endSec = trimEnd * dur;
+    const regionDur = endSec - startSec;
+    const regionSamples = Math.round(regionDur * sr);
+
+    // Create trimmed buffer
+    const trimmedBuffer = new AudioBuffer({
+      numberOfChannels: numCh,
+      length: regionSamples,
+      sampleRate: sr
+    });
+    const startSample = Math.round(startSec * sr);
+    for (let ch = 0; ch < numCh; ch++) {
+      const src = audioBuffer.getChannelData(ch);
+      const dst = trimmedBuffer.getChannelData(ch);
+      for (let i = 0; i < regionSamples; i++) {
+        dst[i] = src[startSample + i];
+      }
+    }
+
+    // Render through OfflineAudioContext with filter + fades
+    const offline = new OfflineAudioContext(numCh, regionSamples, sr);
+
+    const source = offline.createBufferSource();
+    source.buffer = trimmedBuffer;
+
+    let lastNode = source;
+
+    // HP filter
+    if (hpEnabled.checked) {
+      const hp = offline.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = parseFloat(hpFreq.value);
+      hp.Q.value = 0.707;
+      lastNode.connect(hp);
+      lastNode = hp;
+    }
+
+    // Fade in/out via GainNode
+    const fadeDur = 1.0;
+    const gainNode = offline.createGain();
+    gainNode.gain.setValueAtTime(0, 0);
+    gainNode.gain.linearRampToValueAtTime(1, Math.min(fadeDur, regionDur / 2));
+    const fadeOutStart = Math.max(regionDur - fadeDur, regionDur / 2);
+    gainNode.gain.setValueAtTime(1, fadeOutStart);
+    gainNode.gain.linearRampToValueAtTime(0, regionDur);
+
+    lastNode.connect(gainNode);
+    gainNode.connect(offline.destination);
+
+    source.start(0);
+    const rendered = await offline.startRendering();
+
+    // Normalize
+    if (normalizeEnabled.checked) {
+      const targetLinear = Math.pow(10, -3 / 20); // -3 dB
+      let peak = 0;
+      for (let ch = 0; ch < rendered.numberOfChannels; ch++) {
+        const data = rendered.getChannelData(ch);
+        for (let i = 0; i < data.length; i++) {
+          const abs = Math.abs(data[i]);
+          if (abs > peak) peak = abs;
+        }
+      }
+      if (peak > 0) {
+        const gain = targetLinear / peak;
+        for (let ch = 0; ch < rendered.numberOfChannels; ch++) {
+          const data = rendered.getChannelData(ch);
+          for (let i = 0; i < data.length; i++) {
+            data[i] *= gain;
+          }
+        }
+      }
+    }
+
+    return rendered;
+  }
+
+  // ---- WAV Encoder ----
+  function encodeWAV(buffer) {
+    const sr = buffer.sampleRate;
+    const numCh = buffer.numberOfChannels;
+    const numSamples = buffer.length;
+    const bytesPerSample = 2; // 16-bit
+    const blockAlign = numCh * bytesPerSample;
+    const byteRate = sr * blockAlign;
+    const dataSize = numSamples * blockAlign;
+    const headerSize = 44;
+    const totalSize = headerSize + dataSize;
+
+    const arrayBuf = new ArrayBuffer(totalSize);
+    const view = new DataView(arrayBuf);
+
+    // RIFF header
+    writeString(view, 0, 'RIFF');
+    view.setUint32(4, totalSize - 8, true);
+    writeString(view, 8, 'WAVE');
+
+    // fmt chunk
+    writeString(view, 12, 'fmt ');
+    view.setUint32(16, 16, true); // chunk size
+    view.setUint16(20, 1, true);  // PCM
+    view.setUint16(22, numCh, true);
+    view.setUint32(24, sr, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, 16, true); // bits per sample
+
+    // data chunk
+    writeString(view, 36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    // Interleave channels and write 16-bit PCM
+    const channels = [];
+    for (let ch = 0; ch < numCh; ch++) {
+      channels.push(buffer.getChannelData(ch));
+    }
+
+    let offset = 44;
+    for (let i = 0; i < numSamples; i++) {
+      for (let ch = 0; ch < numCh; ch++) {
+        let sample = channels[ch][i];
+        // Clamp
+        if (sample > 1) sample = 1;
+        if (sample < -1) sample = -1;
+        view.setInt16(offset, sample * 0x7FFF, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([arrayBuf], { type: 'audio/wav' });
+  }
+
+  function writeString(view, offset, str) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
+
+  function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
+
+  // ---- Keyboard shortcuts ----
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      playBtn.click();
+    }
+    if (!audioBuffer) return;
+    const dur = audioBuffer.duration;
+    const nudge = 0.001; // fraction of total duration
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+      // Nudge the most recently interacted handle, or default to whichever is closer to cursor
+      // Simple: nudge start if shift held, end otherwise
+      const dir = e.code === 'ArrowRight' ? 1 : -1;
+      if (e.shiftKey) {
+        trimStart = Math.max(0, Math.min(trimEnd - 0.005, trimStart + dir * nudge));
+      } else {
+        trimEnd = Math.max(trimStart + 0.005, Math.min(1, trimEnd + dir * nudge));
+      }
+      updateTrimUI();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
