@@ -1,16 +1,36 @@
 /**
- * Audio playback with live HP filter preview.
+ * Audio playback with live HP filter preview and marker support.
  */
 import State from './state.js';
 import { formatTime, applyFadeEnvelope } from './utils.js';
 
 const playBtn = document.getElementById('playBtn');
+const rewindBtn = document.getElementById('rewindBtn');
 const timeDisplay = document.getElementById('timeDisplay');
 const playbackCursor = document.getElementById('playbackCursor');
+const playbackMarker = document.getElementById('playbackMarker');
 const hpEnabled = document.getElementById('hpEnabled');
 const hpFreq = document.getElementById('hpFreq');
 const wrapper = document.getElementById('spectrogramWrapper');
 const inner = document.getElementById('spectrogramInner');
+
+/**
+ * Reposition the orange marker element to reflect State.markerPos.
+ * Clamps to [trimStart, trimEnd] and hides when no audio is loaded.
+ */
+function updateMarker() {
+  if (!State.audioBuffer) {
+    playbackMarker.style.display = 'none';
+    return;
+  }
+
+  // Clamp marker to the current trim region
+  State.markerPos = Math.max(State.trimStart, Math.min(State.trimEnd, State.markerPos));
+
+  const totalWidth = parseFloat(inner.style.width) || wrapper.clientWidth;
+  playbackMarker.style.left = (State.markerPos * totalWidth) + 'px';
+  playbackMarker.style.display = 'block';
+}
 
 function start() {
   const buf = State.audioBuffer;
@@ -21,8 +41,14 @@ function start() {
 
   const ctx = State.audioCtx;
   const dur = buf.duration;
-  const startSec = State.trimStart * dur;
+
+  // Clamp marker to trim region before using it as the start point
+  const clampedMarker = Math.max(State.trimStart, Math.min(State.trimEnd, State.markerPos));
+  const startSec = clampedMarker * dur;
   const regionDur = State.trimEnd * dur - startSec;
+
+  // Guard against zero-length region (marker at trimEnd)
+  if (regionDur <= 0.01) return;
 
   const source = ctx.createBufferSource();
   source.buffer = buf;
@@ -54,13 +80,31 @@ function start() {
   State.isPlaying = true;
   playBtn.innerHTML = '&#9646;&#9646;';
 
-  source.onended = () => { if (State.isPlaying) stop(); };
+  // Natural end: reset marker to trimStart so next play starts from the beginning
+  source.onended = () => {
+    if (State.isPlaying) {
+      State.markerPos = State.trimStart;
+      stop();
+    }
+  };
 
   playbackCursor.style.display = 'block';
   animate();
 }
 
-function stop() {
+/**
+ * Stop playback.
+ * @param {boolean} savePosition  When true, saves the current playback
+ *                                position to State.markerPos (user-initiated pause).
+ */
+function stop(savePosition = false) {
+  if (savePosition && State.isPlaying && State.audioCtx && State.audioBuffer) {
+    const elapsed = State.audioCtx.currentTime - State.playStartTime;
+    const currentSec = State.playOffset + elapsed;
+    const dur = State.audioBuffer.duration;
+    State.markerPos = Math.max(State.trimStart, Math.min(State.trimEnd, currentSec / dur));
+  }
+
   State.isPlaying = false;
   playBtn.innerHTML = '&#9654;';
   playbackCursor.style.display = 'none';
@@ -82,6 +126,8 @@ function stop() {
     try { State.fadeNode.disconnect(); } catch (_) {}
     State.fadeNode = null;
   }
+
+  updateMarker();
 }
 
 function animate() {
@@ -116,9 +162,31 @@ function animate() {
 
 function toggle() {
   State.ensureAudioCtx();
-  if (State.isPlaying) { stop(); } else { start(); }
+  // Pass savePosition=true so pausing records the current playback position
+  if (State.isPlaying) { stop(true); } else { start(); }
 }
 
 playBtn.addEventListener('click', toggle);
 
-export const Playback = { start, stop, toggle };
+// Rewind button: move marker to the start of the trim region
+rewindBtn.addEventListener('click', () => {
+  if (!State.audioBuffer) return;
+  State.markerPos = State.trimStart;
+  updateMarker();
+});
+
+// Click on the spectrogram to place the marker (only when paused)
+inner.addEventListener('click', (e) => {
+  if (State.isPlaying) return;
+  if (!State.audioBuffer) return;
+  // Ignore clicks on trim handles
+  if (e.target.classList.contains('trim-handle')) return;
+
+  const rect = inner.getBoundingClientRect();
+  const totalWidth = parseFloat(inner.style.width) || wrapper.clientWidth;
+  const rawFrac = (e.clientX - rect.left) / totalWidth;
+  State.markerPos = Math.max(State.trimStart, Math.min(State.trimEnd, rawFrac));
+  updateMarker();
+});
+
+export const Playback = { start, stop, toggle, updateMarker };

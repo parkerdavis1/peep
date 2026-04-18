@@ -20,6 +20,9 @@ const State = {
   trimStart: 0,
   trimEnd: 1,
 
+  // Marker position (fraction 0–1 of total duration); set to trimStart on load
+  markerPos: 0,
+
   // Zoom
   zoomLevel: 1,
   MAX_ZOOM: 32,

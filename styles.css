@@ -11,6 +11,7 @@
   --trim-overlay: rgba(200, 200, 200, 0.55);
   --handle-color: #d44;
   --cursor-color: #2a6dd4;
+  --marker-color: #e67300;
 }
 
 html, body {
@@ -165,6 +166,17 @@ canvas#spectrogram {
   display: none;
 }
 
+.playback-marker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--marker-color);
+  pointer-events: none;
+  z-index: 4;
+  display: none;
+}
+
 /* ---- Time bar ---- */
 .time-bar {
   display: flex;
@@ -228,6 +240,21 @@ canvas#spectrogram {
   transition: background 0.15s;
 }
 .play-btn:active { background: var(--accent-hover); }
+
+.rewind-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+.rewind-btn:active { background: #eee; }
 
 .time-display {
   font-size: 14px;

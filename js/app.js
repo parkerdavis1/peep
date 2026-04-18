@@ -34,6 +34,7 @@ fileInput.addEventListener('change', async (e) => {
 
     State.trimStart = 0;
     State.trimEnd = 1;
+    State.markerPos = 0;
     State.zoomLevel = 1;
 
     UI.showLoading('Computing spectrogram...');
@@ -47,6 +48,7 @@ fileInput.addEventListener('change', async (e) => {
 
     Spectrogram.render();
     Trim.updateUI();
+    Playback.updateMarker();
     Spectrogram.updateFreqAxis();
     Spectrogram.updateTimeBar();
     UI.hideLoading();
@@ -67,6 +69,7 @@ function applyZoom(oldZoom) {
 
   Spectrogram.render();
   Trim.updateUI();
+  Playback.updateMarker();
 
   const newTotal = wrapperWidth * State.zoomLevel;
   wrapper.scrollLeft = centerFrac * newTotal - wrapperWidth / 2;

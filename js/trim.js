@@ -2,6 +2,7 @@
  * Trim handle interaction (drag to set trim region).
  */
 import State from './state.js';
+import { Playback } from './playback.js';
 
 const inner = document.getElementById('spectrogramInner');
 const wrapper = document.getElementById('spectrogramWrapper');
@@ -56,6 +57,7 @@ document.addEventListener('pointermove', (e) => {
     State.trimEnd = Math.max(frac, State.trimStart + MIN_GAP);
   }
   updateUI();
+  Playback.updateMarker();
 });
 
 document.addEventListener('pointerup', () => { dragging = null; });
