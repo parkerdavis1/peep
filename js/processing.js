@@ -2,6 +2,7 @@
  * Audio processing pipeline and WAV encoding.
  */
 import State from './state.js';
+import { applyFadeEnvelope } from './utils.js';
 
 const hpEnabled = document.getElementById('hpEnabled');
 const hpFreq = document.getElementById('hpFreq');
@@ -53,14 +54,9 @@ async function process() {
     lastNode = hp;
   }
 
-  // Fade in / out (1 second each)
-  const fadeDur = 1.0;
+  // Fade in / out — shape defined in utils.js applyFadeEnvelope
   const gain = offline.createGain();
-  gain.gain.setValueAtTime(0, 0);
-  gain.gain.linearRampToValueAtTime(1, Math.min(fadeDur, regionDur / 2));
-  const fadeOutStart = Math.max(regionDur - fadeDur, regionDur / 2);
-  gain.gain.setValueAtTime(1, fadeOutStart);
-  gain.gain.linearRampToValueAtTime(0, regionDur);
+  applyFadeEnvelope(gain, regionDur, 0);
 
   lastNode.connect(gain);
   gain.connect(offline.destination);

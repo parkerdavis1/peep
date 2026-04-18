@@ -11,6 +11,7 @@ const State = {
   isPlaying: false,
   sourceNode: null,
   filterNode: null,
+  fadeNode: null,
   playStartTime: 0,
   playOffset: 0,
   animFrameId: null,

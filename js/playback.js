@@ -2,7 +2,7 @@
  * Audio playback with live HP filter preview.
  */
 import State from './state.js';
-import { formatTime } from './utils.js';
+import { formatTime, applyFadeEnvelope } from './utils.js';
 
 const playBtn = document.getElementById('playBtn');
 const timeDisplay = document.getElementById('timeDisplay');
@@ -41,7 +41,12 @@ function start() {
     State.filterNode = filter;
   }
 
-  lastNode.connect(ctx.destination);
+  // Fade in / out — shape defined in utils.js applyFadeEnvelope
+  const fadeGain = ctx.createGain();
+  applyFadeEnvelope(fadeGain, regionDur, ctx.currentTime);
+  lastNode.connect(fadeGain);
+  fadeGain.connect(ctx.destination);
+  State.fadeNode = fadeGain;
 
   source.start(0, startSec, regionDur);
   State.playStartTime = ctx.currentTime;
@@ -72,6 +77,10 @@ function stop() {
   if (State.filterNode) {
     try { State.filterNode.disconnect(); } catch (_) {}
     State.filterNode = null;
+  }
+  if (State.fadeNode) {
+    try { State.fadeNode.disconnect(); } catch (_) {}
+    State.fadeNode = null;
   }
 }
 
