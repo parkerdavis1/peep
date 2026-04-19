@@ -97,7 +97,7 @@ function render(): void {
         if (data[i] < minDb) minDb = data[i];
         if (data[i] > maxDb) maxDb = data[i];
     }
-    if (minDb < -100) minDb = -100;
+    if (minDb < -60) minDb = -60;
     if (maxDb < -10) maxDb = -10;
     const range = maxDb - minDb || 1;
 
@@ -109,6 +109,8 @@ function render(): void {
             let norm = (data[col * rows + row] - minDb) / range;
             if (norm < 0) norm = 0;
             if (norm > 1) norm = 1;
+
+            norm = Math.pow(norm, 1.2);
 
             const grey = Math.round((1 - norm) * 255);
             const y = rows - 1 - row; // low freq at bottom
