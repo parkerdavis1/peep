@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, user-scalable=no"
+        />
+        <title>eBird Sound Editor</title>
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body>
+        <div class="container">
+            <h1>eBird Sound Editor</h1>
+
+            <div class="file-section">
+                <label class="file-label">
+                    Open WAV File
+                    <input type="file" id="fileInput" accept=".wav,audio/wav" />
+                </label>
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+
+            <div class="spectrogram-section" id="spectrogramSection">
+                <div class="spectrogram-wrapper" id="spectrogramWrapper">
+                    <div class="spectrogram-inner" id="spectrogramInner">
+                        <canvas id="spectrogram"></canvas>
+                        <div class="trim-overlay-left" id="trimLeft"></div>
+                        <div class="trim-overlay-right" id="trimRight"></div>
+                        <div class="trim-handle" id="handleLeft"></div>
+                        <div class="trim-handle" id="handleRight"></div>
+                        <div class="playback-marker" id="playbackMarker"></div>
+                        <div class="playback-cursor" id="playbackCursor"></div>
+                        <div class="freq-axis" id="freqAxis"></div>
+                    </div>
+                </div>
+                <div class="time-bar">
+                    <span id="timeStart">0:00.0</span>
+                    <span id="timeEnd">0:00.0</span>
+                </div>
+
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomOut">&minus;</button>
+                    <span class="zoom-level" id="zoomLevel">1x</span>
+                    <button class="zoom-btn" id="zoomIn">+</button>
+                </div>
+
+                <div class="playback-controls">
+                    <button class="rewind-btn" id="rewindBtn">&#9664;</button>
+                    <button class="play-btn" id="playBtn">&#9654;</button>
+                    <div class="time-display" id="timeDisplay">
+                        0:00.0 / 0:00.0
+                    </div>
+                </div>
+
+                <div class="settings">
+                    <div class="setting-row">
+                        <span class="setting-label">High-pass filter</span>
+                        <div class="setting-control">
+                            <input type="checkbox" id="hpEnabled" checked />
+                            <input
+                                type="range"
+                                id="hpFreq"
+                                min="50"
+                                max="500"
+                                value="100"
+                                step="10"
+                            />
+                            <span class="setting-value" id="hpValue"
+                                >100 Hz</span
+                            >
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label"
+                            >Normalize to &minus;3 dB</span
+                        >
+                        <div class="setting-control">
+                            <input
+                                type="checkbox"
+                                id="normalizeEnabled"
+                                checked
+                            />
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <span class="setting-label">Fade in / out</span>
+                        <div class="setting-control">
+                            <span class="setting-value">1.0 s</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="save-section">
+                    <button class="save-btn" id="saveBtn">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-box">
+                <div class="spinner"></div>
+                <div id="loadingText">Processing...</div>
+            </div>
+        </div>
+
+        <script type="module" src="src/js/app.ts"></script>
+    </body>
+</html>
