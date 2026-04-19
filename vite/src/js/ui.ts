@@ -4,6 +4,7 @@
 import State from "./state.ts";
 import { Playback } from "./playback.ts";
 import { Trim } from "./trim.ts";
+import { zoomIn, zoomOut } from "./app.ts";
 
 const loadingOverlay = document.getElementById("loadingOverlay")!;
 const loadingText = document.getElementById("loadingText")!;
@@ -56,21 +57,28 @@ document.addEventListener("keydown", (e) => {
     }
     if (!State.audioBuffer) return;
 
-    const NUDGE = 0.001;
+    const NUDGE = 0.005;
     if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+        // If during playback, do nothing
+        if (State.isPlaying) return;
+        console.log("ARROW LEFT OR RIGHT");
         const dir = e.code === "ArrowRight" ? 1 : -1;
-        if (e.shiftKey) {
-            State.trimStart = Math.max(
-                0,
-                Math.min(State.trimEnd - 0.005, State.trimStart + dir * NUDGE),
-            );
-        } else {
-            State.trimEnd = Math.max(
-                State.trimStart + 0.005,
-                Math.min(1, State.trimEnd + dir * NUDGE),
-            );
-        }
-        Trim.updateUI();
+
+        State.markerPos = Math.max(
+            0,
+            Math.min(1, State.markerPos + dir * NUDGE),
+        );
+
+        Playback.updateMarker();
+    }
+
+    if (e.code === "ArrowUp") {
+        e.preventDefault();
+        zoomIn();
+    }
+    if (e.code === "ArrowDown") {
+        e.preventDefault();
+        zoomOut();
     }
 });
 

@@ -84,19 +84,23 @@ function applyZoom(oldZoom: number): void {
     Spectrogram.updateTimeBar();
 }
 
-zoomInBtn.addEventListener("click", () => {
+export function zoomIn(): void {
     if (State.zoomLevel >= State.MAX_ZOOM) return;
     const old = State.zoomLevel;
     State.zoomLevel = Math.min(State.zoomLevel * 2, State.MAX_ZOOM);
     applyZoom(old);
-});
+}
 
-zoomOutBtn.addEventListener("click", () => {
+export function zoomOut(): void {
     if (State.zoomLevel <= 1) return;
     const old = State.zoomLevel;
     State.zoomLevel = Math.max(State.zoomLevel / 2, 1);
     applyZoom(old);
-});
+}
+
+zoomInBtn.addEventListener("click", zoomIn);
+
+zoomOutBtn.addEventListener("click", zoomOut);
 
 // ---- Process & Save ----
 saveBtn.addEventListener("click", async () => {
