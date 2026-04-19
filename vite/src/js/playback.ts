@@ -11,7 +11,13 @@ const playbackCursor = document.getElementById("playbackCursor")!;
 const playbackMarker = document.getElementById("playbackMarker")!;
 const hpEnabled = document.getElementById("hpEnabled") as HTMLInputElement;
 const hpFreq = document.getElementById("hpFreq") as HTMLInputElement;
-const normalizeEnabled = document.getElementById("normalizeEnabled") as HTMLInputElement;
+const normalizeEnabled = document.getElementById(
+    "normalizeEnabled",
+) as HTMLInputElement;
+const fadeEnabled = document.getElementById("fadeEnabled") as HTMLInputElement;
+const fadeDuration = document.getElementById(
+    "fadeDuration",
+) as HTMLInputElement;
 const wrapper = document.getElementById("spectrogramWrapper")!;
 const inner = document.getElementById("spectrogramInner")!;
 
@@ -52,10 +58,13 @@ function start(): void {
         Math.min(State.trimEnd, State.markerPos),
     );
     const startSec = clampedMarker * dur;
-    const regionDur = State.trimEnd * dur - startSec;
+    const trimStartSec = State.trimStart * dur;
+    const fullRegionDur = State.trimEnd * dur - trimStartSec;
+    const remainingDur = State.trimEnd * dur - startSec;
+    const offsetInRegion = startSec - trimStartSec;
 
     // Guard against zero-length region (marker at trimEnd)
-    if (regionDur <= 0.01) return;
+    if (remainingDur <= 0.01) return;
 
     const source = ctx.createBufferSource();
     source.buffer = buf;
@@ -76,7 +85,14 @@ function start(): void {
 
     // Fade in / out — shape defined in utils.ts applyFadeEnvelope
     const fadeGain = ctx.createGain();
-    applyFadeEnvelope(fadeGain, regionDur, ctx.currentTime);
+    applyFadeEnvelope(
+        fadeGain,
+        fullRegionDur,
+        ctx.currentTime,
+        parseFloat(fadeDuration.value),
+        fadeEnabled.checked,
+        offsetInRegion,
+    );
     lastNode.connect(fadeGain);
     State.fadeNode = fadeGain;
 
@@ -99,7 +115,7 @@ function start(): void {
         fadeGain.connect(ctx.destination);
     }
 
-    source.start(0, startSec, regionDur);
+    source.start(0, startSec, remainingDur);
     State.playStartTime = ctx.currentTime;
     State.playOffset = startSec;
     State.isPlaying = true;
@@ -168,7 +184,9 @@ function stop(savePosition = false): void {
         State.fadeNode = null;
     }
     if (State.normalizeNode) {
-        try { State.normalizeNode.disconnect(); } catch (_) {}
+        try {
+            State.normalizeNode.disconnect();
+        } catch (_) {}
         State.normalizeNode = null;
     }
 
