@@ -39,6 +39,15 @@ fadeDuration.addEventListener("input", () => {
     fadeValue.textContent = parseFloat(fadeDuration.value).toFixed(1) + " s";
 });
 
+// Disable slider when fade is unchecked
+fadeEnabledEl.addEventListener("change", () => {
+    fadeDuration.disabled = !fadeEnabledEl.checked;
+});
+
+// ---- Initialise display values from current slider positions ----
+hpValue.textContent = hpFreq.value + " Hz";
+fadeValue.textContent = parseFloat(fadeDuration.value).toFixed(1) + " s";
+
 // ---- Keyboard shortcuts ----
 document.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
