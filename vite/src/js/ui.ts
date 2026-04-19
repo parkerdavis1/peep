@@ -3,7 +3,6 @@
  */
 import State from "./state.ts";
 import { Playback } from "./playback.ts";
-import { Trim } from "./trim.ts";
 import { zoomIn, zoomOut } from "./app.ts";
 
 const loadingOverlay = document.getElementById("loadingOverlay")!;
