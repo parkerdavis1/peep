@@ -22,6 +22,12 @@ fileInput.addEventListener("change", async (e) => {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
+    // Make sure the file is less than 100mb
+    if (file.size > 200 * 1024 * 1024) {
+        alert("File is too large (max 200 MB)");
+        return;
+    }
+
     State.ensureAudioCtx();
     Playback.stop();
 

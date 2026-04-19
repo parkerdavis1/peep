@@ -27,7 +27,7 @@
             <h1>eBird Sound Editor</h1>
 
             <div class="file-section">
-                <label class="file-label">
+                <label class="file-button">
                     Open WAV File
                     <input type="file" id="fileInput" accept=".wav,audio/wav" />
                 </label>
@@ -52,17 +52,21 @@
                     <span id="timeEnd">0:00.0</span>
                 </div>
 
-                <div class="zoom-controls">
-                    <button class="zoom-btn" id="zoomOut">&minus;</button>
-                    <span class="zoom-level" id="zoomLevel">1x</span>
-                    <button class="zoom-btn" id="zoomIn">+</button>
-                </div>
+                <div class="playback-controls-container">
+                    <div class="zoom-controls">
+                        <button class="zoom-btn" id="zoomOut">&minus;</button>
+                        <span class="zoom-level" id="zoomLevel">1x</span>
+                        <button class="zoom-btn" id="zoomIn">+</button>
+                    </div>
 
-                <div class="playback-controls">
-                    <button class="rewind-btn" id="rewindBtn">&#9664;</button>
-                    <button class="play-btn" id="playBtn">&#9654;</button>
-                    <div class="time-display" id="timeDisplay">
-                        0:00.0 / 0:00.0
+                    <div class="playback-controls">
+                        <button class="rewind-btn" id="rewindBtn">
+                            &#9664;
+                        </button>
+                        <button class="play-btn" id="playBtn">&#9654;</button>
+                        <div class="time-display" id="timeDisplay">
+                            0:00.0 / 0:00.0
+                        </div>
                     </div>
                 </div>
 

@@ -35,7 +35,6 @@ body {
 }
 
 .container {
-    /*max-width: 600px;*/
     margin: 0 auto;
     padding: 12px;
 }
@@ -53,7 +52,7 @@ h1 {
     margin-bottom: 12px;
 }
 
-.file-label {
+.file-button {
     display: inline-block;
     padding: 12px 24px;
     background: var(--accent);
@@ -64,10 +63,12 @@ h1 {
     cursor: pointer;
     transition: background 0.15s;
 }
-.file-label:active {
+
+.file-button:active {
     background: var(--accent-hover);
 }
-.file-label input {
+
+.file-button input {
     display: none;
 }
 
@@ -207,12 +208,21 @@ canvas#spectrogram {
     padding: 2px 4px;
 }
 
+/* ---- Playback controls bar ---- */
+.playback-controls-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    column-gap: 4rem;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
 /* ---- Zoom controls ---- */
 .zoom-controls {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
     margin: 8px 0;
 }
 .zoom-btn {
