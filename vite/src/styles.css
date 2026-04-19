@@ -7,17 +7,19 @@
 }
 
 :root {
-    --bg: #f5f5f5;
+    --bg: #f2fafd;
     --surface: #ffffff;
     --text: #222;
     --text-secondary: #666;
-    --accent: #2a6dd4;
-    --accent-hover: #1d5ab8;
+    --accent: #40718f;
+    --accent-hover: #315870;
     --border: #ddd;
     --trim-overlay: rgba(200, 200, 200, 0.55);
     --handle-color: #d44;
-    --cursor-color: #2a6dd4;
+    --cursor-color: #40718f;
     --marker-color: #e67300;
+    --save-color: #36824b;
+    --save-color-active: #2a653a;
 }
 
 html,
@@ -296,6 +298,8 @@ canvas#spectrogram {
     border-radius: 8px;
     padding: 14px;
     margin: 12px 0;
+    max-width: 500px;
+    margin-inline: auto;
 }
 
 .setting-row {
@@ -363,7 +367,7 @@ input[type="checkbox"] {
 .save-btn {
     display: inline-block;
     padding: 14px 32px;
-    background: #2a8c4a;
+    background: var(--save-color);
     color: #fff;
     border: none;
     border-radius: 8px;

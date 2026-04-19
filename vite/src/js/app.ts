@@ -111,3 +111,36 @@ saveBtn.addEventListener("click", async () => {
         console.error(err);
     }
 });
+
+// Rerender spectrogram on window resize (debounced) and preserve center position
+let __spectrogramResizeTimer: number | null = null;
+window.addEventListener("resize", () => {
+    if (!State.audioBuffer) return;
+
+    const wrapper = Spectrogram.wrapper;
+    const oldWidth = wrapper.clientWidth;
+    const oldScroll = wrapper.scrollLeft;
+    const oldTotal = oldWidth * State.zoomLevel;
+    const centerFrac = oldTotal ? (oldScroll + oldWidth / 2) / oldTotal : 0.5;
+
+    if (__spectrogramResizeTimer !== null) {
+        window.clearTimeout(__spectrogramResizeTimer);
+    }
+
+    // Wait for resize to settle before re-rendering
+    __spectrogramResizeTimer = window.setTimeout(() => {
+        // Re-render canvas to match new layout
+        Spectrogram.render();
+        Trim.updateUI();
+        Playback.updateMarker();
+        Spectrogram.updateFreqAxis();
+
+        // Restore scroll so center stays focused
+        const newWidth = wrapper.clientWidth;
+        const newTotal = newWidth * State.zoomLevel;
+        wrapper.scrollLeft = centerFrac * newTotal - newWidth / 2;
+
+        Spectrogram.updateTimeBar();
+        __spectrogramResizeTimer = null;
+    }, 150);
+});
