@@ -13,6 +13,7 @@ interface AppState {
   sourceNode: AudioBufferSourceNode | null;
   filterNode: BiquadFilterNode | null;
   fadeNode: GainNode | null;
+  normalizeNode: GainNode | null;
   playStartTime: number;
   playOffset: number;
   animFrameId: number | null;
@@ -46,6 +47,7 @@ const State: AppState = {
   sourceNode: null,
   filterNode: null,
   fadeNode: null,
+  normalizeNode: null,
   playStartTime: 0,
   playOffset: 0,
   animFrameId: null,

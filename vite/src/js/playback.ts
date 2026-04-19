@@ -11,6 +11,7 @@ const playbackCursor = document.getElementById("playbackCursor")!;
 const playbackMarker = document.getElementById("playbackMarker")!;
 const hpEnabled = document.getElementById("hpEnabled") as HTMLInputElement;
 const hpFreq = document.getElementById("hpFreq") as HTMLInputElement;
+const normalizeEnabled = document.getElementById("normalizeEnabled") as HTMLInputElement;
 const wrapper = document.getElementById("spectrogramWrapper")!;
 const inner = document.getElementById("spectrogramInner")!;
 
@@ -77,8 +78,26 @@ function start(): void {
     const fadeGain = ctx.createGain();
     applyFadeEnvelope(fadeGain, regionDur, ctx.currentTime);
     lastNode.connect(fadeGain);
-    fadeGain.connect(ctx.destination);
     State.fadeNode = fadeGain;
+
+    if (normalizeEnabled.checked) {
+        const buf = State.audioBuffer!;
+        let peak = 0;
+        for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+            const data = buf.getChannelData(ch);
+            for (let i = 0; i < data.length; i++) {
+                const abs = Math.abs(data[i]);
+                if (abs > peak) peak = abs;
+            }
+        }
+        const normalizeGain = ctx.createGain();
+        if (peak > 0) normalizeGain.gain.value = Math.pow(10, -3 / 20) / peak;
+        fadeGain.connect(normalizeGain);
+        normalizeGain.connect(ctx.destination);
+        State.normalizeNode = normalizeGain;
+    } else {
+        fadeGain.connect(ctx.destination);
+    }
 
     source.start(0, startSec, regionDur);
     State.playStartTime = ctx.currentTime;
@@ -147,6 +166,10 @@ function stop(savePosition = false): void {
             State.fadeNode.disconnect();
         } catch (_) {}
         State.fadeNode = null;
+    }
+    if (State.normalizeNode) {
+        try { State.normalizeNode.disconnect(); } catch (_) {}
+        State.normalizeNode = null;
     }
 
     updateMarker();
