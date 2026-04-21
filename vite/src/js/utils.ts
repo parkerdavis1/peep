@@ -6,10 +6,10 @@
  * Format seconds as m:ss.t
  */
 export function formatTime(sec: number): string {
-    if (!isFinite(sec)) return "0:00.0";
-    const m = Math.floor(sec / 60);
-    const s = sec - m * 60;
-    return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1);
+    if (!isFinite(sec)) return "0:00.0"
+    const m = Math.floor(sec / 60)
+    const s = sec - m * 60
+    return m + ":" + (s < 10 ? "0" : "") + s.toFixed(1)
 }
 
 /**
@@ -35,48 +35,45 @@ export function applyFadeEnvelope(
     fadeEnabled: boolean = true,
     offsetInRegion: number = 0, // seconds into the full trim region where playback starts
 ): void {
-    const SILENCE = 0.0001; // ~-80 dB; linearRamp cannot reach exactly 0
-    const t0 = timeOffset;
-    const remainingDur = regionDur - offsetInRegion;
+    const SILENCE = 0.0001 // ~-80 dB; linearRamp cannot reach exactly 0
+    const t0 = timeOffset
+    const remainingDur = regionDur - offsetInRegion
 
     if (!fadeEnabled) {
-        gainNode.gain.setValueAtTime(1, t0);
-        return;
+        gainNode.gain.setValueAtTime(1, t0)
+        return
     }
 
-    const fadeIn = Math.min(fadeDur, regionDur / 2);
-    const fadeOutStart = Math.max(regionDur - fadeDur, regionDur / 2);
+    const fadeIn = Math.min(fadeDur, regionDur / 2)
+    const fadeOutStart = Math.max(regionDur - fadeDur, regionDur / 2)
 
     // What gain value is in effect at the playhead's position in the envelope?
-    let gainAtOffset: number;
+    let gainAtOffset: number
     if (offsetInRegion <= 0) {
-        gainAtOffset = SILENCE;
+        gainAtOffset = SILENCE
     } else if (offsetInRegion < fadeIn) {
-        gainAtOffset = SILENCE + (1 - SILENCE) * (offsetInRegion / fadeIn);
+        gainAtOffset = SILENCE + (1 - SILENCE) * (offsetInRegion / fadeIn)
     } else if (offsetInRegion <= fadeOutStart) {
-        gainAtOffset = 1;
+        gainAtOffset = 1
     } else {
         const fadeProg =
-            (offsetInRegion - fadeOutStart) / (regionDur - fadeOutStart);
-        gainAtOffset = 1 - (1 - SILENCE) * fadeProg;
+            (offsetInRegion - fadeOutStart) / (regionDur - fadeOutStart)
+        gainAtOffset = 1 - (1 - SILENCE) * fadeProg
     }
 
     // Schedule gain starting from the playhead's position in the envelope
-    gainNode.gain.setValueAtTime(gainAtOffset, t0);
+    gainNode.gain.setValueAtTime(gainAtOffset, t0)
 
     // Complete the fade-in if we're still in it
     if (offsetInRegion < fadeIn) {
-        gainNode.gain.linearRampToValueAtTime(
-            1,
-            t0 + (fadeIn - offsetInRegion),
-        );
+        gainNode.gain.linearRampToValueAtTime(1, t0 + (fadeIn - offsetInRegion))
     }
 
     // Hold at 1 until the fade-out begins (if fade-out hasn't started yet)
     if (offsetInRegion < fadeOutStart) {
-        gainNode.gain.setValueAtTime(1, t0 + (fadeOutStart - offsetInRegion));
+        gainNode.gain.setValueAtTime(1, t0 + (fadeOutStart - offsetInRegion))
     }
 
     // Fade out to silence at the trim end
-    gainNode.gain.linearRampToValueAtTime(SILENCE, t0 + remainingDur);
+    gainNode.gain.linearRampToValueAtTime(SILENCE, t0 + remainingDur)
 }
