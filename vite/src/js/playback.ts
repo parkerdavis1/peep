@@ -121,7 +121,7 @@ function start(): void {
 
     // Natural end: reset marker to trimStart so next play starts from the beginning
     source.onended = () => {
-        if (State.isPlaying) {
+        if (State.sourceNode === source) {
             State.markerPos = State.trimStart
             stop()
         }
@@ -244,8 +244,13 @@ playBtn.addEventListener("click", toggle)
 // Rewind button: move marker to the start of the trim region
 rewindBtn.addEventListener("click", () => {
     if (!State.audioBuffer) return
+    const wasPlaying = State.isPlaying
+    stop()
     State.markerPos = State.trimStart
     updateMarker()
+    if (wasPlaying) {
+        start()
+    }
 })
 
 // Click on the spectrogram to place the marker (only when paused)
