@@ -268,6 +268,7 @@ inner.addEventListener("click", (e) => {
         Math.min(State.trimEnd, rawFrac),
     )
     updateMarker()
+    updateTimeDisplay()
 })
 
 export const Playback = { start, stop, toggle, updateMarker, updateTimeDisplay }

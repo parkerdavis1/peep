@@ -57,6 +57,7 @@ fileInput.addEventListener("change", async (e) => {
         Spectrogram.render()
         Trim.updateUI()
         Playback.updateMarker()
+        Playback.updateTimeDisplay()
         Spectrogram.updateFreqAxis()
         Spectrogram.updateTimeBar()
         UI.hideLoading()

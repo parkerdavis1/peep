@@ -65,6 +65,7 @@ document.addEventListener("keydown", (e) => {
         )
 
         Playback.updateMarker()
+        Playback.updateTimeDisplay()
     }
 
     if (e.code === "ArrowUp") {
