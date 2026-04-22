@@ -101,13 +101,50 @@ h1 {
     background: #fff;
     touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
-    border: 1px red solid;
 }
 
 .spectrogram-inner {
     position: relative;
     height: 200px;
     min-width: 100%;
+    overflow: hidden;
+}
+
+/* ---- Time ruler ---- */
+.time-ruler {
+    position: relative;
+    height: 20px;
+    min-width: 100%;
+    overflow: hidden;
+    user-select: none;
+    pointer-events: none;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.time-tick {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 4px;
+    background: var(--border);
+}
+
+.time-tick.major {
+    height: 7px;
+    background: var(--text-secondary);
+}
+
+.time-tick span {
+    position: absolute;
+    top: 8px;
+    left: 0;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
 }
 
 canvas#spectrogram {

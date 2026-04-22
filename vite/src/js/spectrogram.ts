@@ -15,6 +15,7 @@ const inner = document.getElementById("spectrogramInner")!
 const canvas = document.getElementById("spectrogram") as HTMLCanvasElement
 const canvasCtx = canvas.getContext("2d")!
 const freqAxis = document.getElementById("freqAxis")!
+const timeRuler = document.getElementById("timeRuler")!
 const timeStartEl = document.getElementById("timeStart")!
 const timeEndEl = document.getElementById("timeEnd")!
 const zoomLevelEl = document.getElementById("zoomLevel")!
@@ -87,6 +88,7 @@ function render(): void {
     canvas.height = rows
     canvas.style.width = canvasWidth + "px"
     inner.style.width = canvasWidth + "px"
+    timeRuler.style.width = canvasWidth + "px"
 
     // Find dB range for color mapping
     let minDb = 0,
@@ -122,6 +124,70 @@ function render(): void {
 
     canvasCtx.putImageData(imgData, 0, 0)
     zoomLevelEl.textContent = State.zoomLevel + "x"
+    updateTimeRuler()
+}
+
+// ---- Time ruler constants ----
+const MIN_TICK_PX = 3 // minimum px between tick marks before switching to coarser interval
+const MIN_LABEL_PX = 55 // minimum px between labels
+const TICK_CANDIDATES = [1, 2, 5, 10, 30, 60]
+const LABEL_CANDIDATES = [1, 2, 5, 10, 15, 30, 60, 120]
+
+function formatTickLabel(t: number): string {
+    const totalSec = Math.round(t)
+    const m = Math.floor(totalSec / 60)
+    const s = totalSec % 60
+    return m + ":" + (s < 10 ? "0" : "") + s
+}
+
+/**
+ * Regenerate the time ruler ticks to match the current zoom / duration.
+ * Called from render() so it always stays in sync.
+ */
+function updateTimeRuler(): void {
+    const buf = State.audioBuffer
+    if (!buf) return
+
+    const dur = buf.duration
+    const totalWidth = parseFloat(inner.style.width) || wrapper.clientWidth
+    const pxPerSec = totalWidth / dur
+
+    // Pick the coarsest tick interval that still keeps marks >= MIN_TICK_PX apart.
+    // Defaults to the finest (1 s) whenever there is enough room.
+    const tickInterval =
+        TICK_CANDIDATES.find((c) => c * pxPerSec >= MIN_TICK_PX) ??
+        TICK_CANDIDATES[TICK_CANDIDATES.length - 1]
+
+    // Label interval must be a multiple of tickInterval so labels always
+    // land on a tick mark.  Pick the smallest that keeps labels >= MIN_LABEL_PX apart.
+    const labelCandidates = LABEL_CANDIDATES.filter(
+        (n) => n % tickInterval === 0,
+    )
+    const labelInterval =
+        labelCandidates.find((c) => c * pxPerSec >= MIN_LABEL_PX) ??
+        labelCandidates[labelCandidates.length - 1] ??
+        tickInterval
+
+    timeRuler.innerHTML = ""
+
+    const numTicks = Math.floor(dur / tickInterval)
+    for (let i = 0; i <= numTicks; i++) {
+        const t = i * tickInterval
+        const x = (t / dur) * totalWidth
+        const isLabeled = t % labelInterval === 0
+
+        const tick = document.createElement("div")
+        tick.className = isLabeled ? "time-tick major" : "time-tick"
+        tick.style.left = Math.round(x) + "px"
+
+        if (isLabeled) {
+            const label = document.createElement("span")
+            label.textContent = formatTickLabel(t)
+            tick.appendChild(label)
+        }
+
+        timeRuler.appendChild(tick)
+    }
 }
 
 /**
