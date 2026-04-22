@@ -191,6 +191,16 @@ function stop(savePosition = false): void {
     updateMarker()
 }
 
+function updateTimeDisplay(currentSec?: number): void {
+    if (!State.audioBuffer) return
+    const dur = State.audioBuffer.duration
+    const sec = currentSec ?? State.markerPos * dur
+    const regionStart = State.trimStart * dur
+    const regionDur = State.trimEnd * dur - regionStart
+    timeDisplay.textContent =
+        formatTime(sec - regionStart) + " / " + formatTime(regionDur)
+}
+
 function animate(): void {
     if (!State.isPlaying) return
 
@@ -206,10 +216,7 @@ function animate(): void {
     playbackCursor.style.left = frac * totalWidth + "px"
 
     // Time display
-    const regionStart = State.trimStart * dur
-    const regionDur = State.trimEnd * dur - regionStart
-    timeDisplay.textContent =
-        formatTime(currentSec - regionStart) + " / " + formatTime(regionDur)
+    updateTimeDisplay(currentSec)
 
     // Auto-scroll
     const cursorPx = frac * totalWidth
@@ -258,4 +265,4 @@ inner.addEventListener("click", (e) => {
     updateMarker()
 })
 
-export const Playback = { start, stop, toggle, updateMarker }
+export const Playback = { start, stop, toggle, updateMarker, updateTimeDisplay }

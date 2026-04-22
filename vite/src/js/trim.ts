@@ -61,6 +61,7 @@ document.addEventListener("pointermove", (e) => {
     }
     updateUI()
     Playback.updateMarker()
+    Playback.updateTimeDisplay()
 })
 
 document.addEventListener("pointerup", () => {

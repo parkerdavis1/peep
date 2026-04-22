@@ -116,7 +116,7 @@ h1 {
 /* ---- Time ruler ---- */
 .time-ruler {
     position: relative;
-    height: 20px;
+    height: 1rem;
     min-width: 100%;
     overflow: hidden;
     user-select: none;
