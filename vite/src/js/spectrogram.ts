@@ -125,7 +125,12 @@ function render(): void {
     canvasCtx.putImageData(imgData, 0, 0)
     zoomLevelEl.textContent = State.zoomLevel + "x"
     updateTimeRuler()
+    updateFreqAxis()
 }
+
+// ---- Freq axis constants ----
+const RULER_H = 20 // matches .time-ruler height in px
+const SPEC_H = 200 // matches canvas/spectrogram-inner height in px
 
 // ---- Time ruler constants ----
 const MIN_TICK_PX = 3 // minimum px between tick marks before switching to coarser interval
@@ -191,7 +196,8 @@ function updateTimeRuler(): void {
 }
 
 /**
- * Draw frequency axis tick labels (1k–10k).
+ * Draw frequency axis tick labels (1k–10k), positioned absolutely
+ * so they align accurately with the spectrogram canvas.
  */
 function updateFreqAxis(): void {
     const buf = State.audioBuffer
@@ -203,10 +209,10 @@ function updateFreqAxis(): void {
 
     for (const freq of ticks) {
         if (freq > maxFreq) break
-        const pct = (1 - freq / maxFreq) * 100
+        const top = RULER_H + (1 - freq / maxFreq) * SPEC_H
         const label = document.createElement("div")
         label.className = "freq-label"
-        // label.style.top = pct + "%"
+        label.style.top = top + "px"
         label.textContent = freq / 1000 + "k"
         freqAxis.appendChild(label)
     }

@@ -88,16 +88,19 @@ h1 {
 }
 
 .spectrogram-wrapper {
-    position: relative;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 6px;
 }
 
 .spectrogram-scroll-wrap {
     position: relative;
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     overflow-x: auto;
     overflow-y: hidden;
-    border: 1px solid var(--border);
-    border-radius: 6px;
     background: #fff;
     touch-action: pan-x;
     -webkit-overflow-scrolling: touch;
@@ -155,22 +158,29 @@ canvas#spectrogram {
 
 /* ---- Frequency axis labels ---- */
 .freq-axis {
-    position: absolute;
-    top: 0px;
-    width: 20px;
-    height: 100%;
+    position: relative;
+    flex-shrink: 0;
+    width: 32px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     pointer-events: none;
-    display: flex;
-    flex-direction: column-reverse;
-    align-content: start;
-    z-index: 100;
-    padding-inline: 0.25rem;
 }
+
+.freq-axis::before {
+    content: "";
+    display: block;
+    height: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
 .freq-label {
-    font-size: 10px;
-    color: rgba(0, 0, 0, 0.5);
-    text-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
-    height: 100%;
+    position: absolute;
+    right: 4px;
+    font-size: 9px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    line-height: 1;
+    transform: translateY(-50%);
 }
 
 /* ---- Trim overlays and handles ---- */
