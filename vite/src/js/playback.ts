@@ -16,7 +16,7 @@ const normalizeEnabled = document.getElementById(
 ) as HTMLInputElement
 const fadeEnabled = document.getElementById("fadeEnabled") as HTMLInputElement
 const fadeDuration = document.getElementById("fadeDuration") as HTMLInputElement
-const wrapper = document.getElementById("spectrogramWrapper")!
+const wrapper = document.getElementById("spectrogramScrollWrap")!
 const inner = document.getElementById("spectrogramInner")!
 
 /**

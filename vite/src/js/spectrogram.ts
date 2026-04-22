@@ -10,7 +10,7 @@ const HOP = 512
 const MAX_FREQ = 10000
 
 // DOM refs
-const wrapper = document.getElementById("spectrogramWrapper")!
+const wrapper = document.getElementById("spectrogramScrollWrap")!
 const inner = document.getElementById("spectrogramInner")!
 const canvas = document.getElementById("spectrogram") as HTMLCanvasElement
 const canvasCtx = canvas.getContext("2d")!
@@ -140,7 +140,7 @@ function updateFreqAxis(): void {
         const pct = (1 - freq / maxFreq) * 100
         const label = document.createElement("div")
         label.className = "freq-label"
-        label.style.top = pct + "%"
+        // label.style.top = pct + "%"
         label.textContent = freq / 1000 + "k"
         freqAxis.appendChild(label)
     }

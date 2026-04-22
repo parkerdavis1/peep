@@ -35,17 +35,31 @@
             </div>
 
             <div class="spectrogram-section" id="spectrogramSection">
-                <div class="spectrogram-wrapper" id="spectrogramWrapper">
-                    <div class="spectrogram-inner" id="spectrogramInner">
-                        <canvas id="spectrogram"></canvas>
-                        <div class="trim-overlay-left" id="trimLeft"></div>
-                        <div class="trim-overlay-right" id="trimRight"></div>
-                        <div class="trim-handle" id="handleLeft"></div>
-                        <div class="trim-handle" id="handleRight"></div>
-                        <div class="playback-marker" id="playbackMarker"></div>
-                        <div class="playback-cursor" id="playbackCursor"></div>
-                        <div class="freq-axis" id="freqAxis"></div>
+                <div class="spectrogram-wrapper">
+                    <div
+                        class="spectrogram-scroll-wrap"
+                        id="spectrogramScrollWrap"
+                    >
+                        <div class="spectrogram-inner" id="spectrogramInner">
+                            <canvas id="spectrogram"></canvas>
+                            <div class="trim-overlay-left" id="trimLeft"></div>
+                            <div
+                                class="trim-overlay-right"
+                                id="trimRight"
+                            ></div>
+                            <div class="trim-handle" id="handleLeft"></div>
+                            <div class="trim-handle" id="handleRight"></div>
+                            <div
+                                class="playback-marker"
+                                id="playbackMarker"
+                            ></div>
+                            <div
+                                class="playback-cursor"
+                                id="playbackCursor"
+                            ></div>
+                        </div>
                     </div>
+                    <div class="freq-axis" id="freqAxis"></div>
                 </div>
                 <div class="time-bar">
                     <span id="timeStart">0:00.0</span>

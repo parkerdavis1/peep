@@ -5,7 +5,7 @@ import State from "./state.ts"
 import { Playback } from "./playback.ts"
 
 const inner = document.getElementById("spectrogramInner")!
-const wrapper = document.getElementById("spectrogramWrapper")!
+const wrapper = document.getElementById("spectrogramScrollWrap")!
 const trimLeftOverlay = document.getElementById("trimLeft")!
 const trimRightOverlay = document.getElementById("trimRight")!
 const handleLeft = document.getElementById("handleLeft")!
