@@ -20,6 +20,8 @@
     --marker-color: #e67300;
     --save-color: #36824b;
     --save-color-active: #2a653a;
+
+    --time-bar-height: 16px;
 }
 
 html,
@@ -116,7 +118,7 @@ h1 {
 /* ---- Time ruler ---- */
 .time-ruler {
     position: relative;
-    height: 1rem;
+    height: var(--time-bar-height);
     min-width: 100%;
     overflow: hidden;
     user-select: none;
@@ -157,7 +159,7 @@ canvas#spectrogram {
 .freq-axis {
     position: relative;
     flex-shrink: 0;
-    width: 24px;
+    width: 20px;
     background: var(--surface);
     border-right: 1px solid var(--border);
     pointer-events: none;
@@ -166,12 +168,12 @@ canvas#spectrogram {
 .freq-axis::before {
     content: "";
     display: block;
-    height: 20px;
+    height: var(--time-bar-height);
 }
 
 .freq-label {
     position: absolute;
-    right: 4px;
+    right: 0px;
     font-size: 9px;
     color: var(--text-secondary);
     white-space: nowrap;
