@@ -135,8 +135,8 @@ const SPEC_H = 200 // matches canvas/spectrogram-inner height in px
 // ---- Time ruler constants ----
 const MIN_TICK_PX = 3 // minimum px between tick marks before switching to coarser interval
 const MIN_LABEL_PX = 55 // minimum px between labels
-const TICK_CANDIDATES = [1, 2, 5, 10, 30, 60]
-const LABEL_CANDIDATES = [1, 2, 5, 10, 15, 30, 60, 120]
+const TICK_CANDIDATES = [1, 5, 10, 30, 60]
+const LABEL_CANDIDATES = [1, 5, 10, 15, 30, 60, 120]
 
 function formatTickLabel(t: number): string {
     const totalSec = Math.round(t)
