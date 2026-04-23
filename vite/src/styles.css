@@ -7,6 +7,8 @@
 }
 
 :root {
+    color-scheme: light dark;
+
     --bg: #f2fafd;
     --surface: #ffffff;
     --text: #222;
@@ -22,6 +24,22 @@
     --save-color-active: #2a653a;
 
     --time-bar-height: 16px;
+
+    @media (prefers-color-scheme: dark) {
+        --bg: #15202b;
+        --surface: #2a2a2a;
+        --text: #fff;
+        --text-secondary: #aaa;
+        --accent: #6091b3;
+        --accent-hover: #4a718f;
+        --border: #444;
+        --trim-overlay: rgba(50, 50, 50, 0.55);
+        --handle-color: #e44;
+        --cursor-color: #6091b3;
+        --marker-color: #f67300;
+        --save-color: #2a653a;
+        --save-color-active: #1a452a;
+    }
 }
 
 html,
