@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/icons/favicon-96x96.png"
+      sizes="96x96"
+    />
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg" />
+    <link rel="shortcut icon" href="/icons/favicon.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icons/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="/icons/site.webmanifest" />
+    <title>Peep</title>
+  </head>
+  <body>
+    <input type="file" id="fileInput" accept=".wav,audio/wav" />
+
+    <div class="splash">
+      <h1>Peep</h1>
+      <p>A web application to streamline audio editing for upload to eBird</p>
+      <label for="fileInput" class="file-button">Open WAV File</label>
+    </div>
+
+    <div class="container">
+      <h1>Peep</h1>
+
+      <div class="file-section">
+        <label for="fileInput" class="file-button">Open WAV File</label>
+        <div class="file-info" id="fileInfo"></div>
+      </div>
+
+      <div class="spectrogram-section" id="spectrogramSection">
+        <div class="spectrogram-wrapper">
+          <div class="freq-axis" id="freqAxis"></div>
+          <div class="spectrogram-scroll-wrap" id="spectrogramScrollWrap">
+            <div class="time-ruler" id="timeRuler"></div>
+            <div class="spectrogram-inner" id="spectrogramInner">
+              <canvas id="spectrogram"></canvas>
+              <div class="trim-overlay-left" id="trimLeft"></div>
+              <div class="trim-overlay-right" id="trimRight"></div>
+              <div class="trim-handle" id="handleLeft"></div>
+              <div class="trim-handle" id="handleRight"></div>
+              <div class="playback-marker" id="playbackMarker"></div>
+              <div class="playback-cursor" id="playbackCursor"></div>
+            </div>
+          </div>
+        </div>
+        <div class="time-bar">
+          <span id="timeStart">0:00.0</span>
+          <span id="timeEnd">0:00.0</span>
+        </div>
+
+        <div class="playback-controls-container">
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="zoomOut">&minus;</button>
+            <span class="zoom-level" id="zoomLevel">1x</span>
+            <button class="zoom-btn" id="zoomIn">+</button>
+          </div>
+
+          <div class="playback-controls">
+            <button class="rewind-btn" id="rewindBtn">&#9664;</button>
+            <button class="play-btn" id="playBtn">&#9654;</button>
+            <div class="time-display" id="timeDisplay">0:00.0 / 0:00.0</div>
+          </div>
+        </div>
+
+        <div class="settings">
+          <div class="setting-row">
+            <span class="setting-label">High-pass filter</span>
+            <div class="setting-control">
+              <input
+                type="range"
+                id="hpFreq"
+                min="50"
+                max="500"
+                value="100"
+                step="10"
+              />
+              <span class="setting-value" id="hpValue">100 Hz</span>
+              <input type="checkbox" id="hpEnabled" checked />
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Normalize to &minus;3 dB</span>
+            <div class="setting-control">
+              <input type="checkbox" id="normalizeEnabled" checked />
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Fade in / out</span>
+            <div class="setting-control">
+              <input
+                type="range"
+                id="fadeDuration"
+                min="0.5"
+                max="5"
+                value="1.0"
+                step="0.5"
+              />
+              <span class="setting-value" id="fadeValue">1.0 s</span>
+              <input type="checkbox" id="fadeEnabled" checked />
+            </div>
+          </div>
+        </div>
+
+        <div class="save-section">
+          <button class="save-btn" id="saveBtn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <div id="loadingText">Processing...</div>
+      </div>
+    </div>
+
+    <script type="module" src="src/js/app.ts"></script>
+  </body>
+</html>

@@ -16,6 +16,8 @@ const spectrogramSection = document.getElementById("spectrogramSection")!
 const zoomInBtn = document.getElementById("zoomIn")!
 const zoomOutBtn = document.getElementById("zoomOut")!
 const saveBtn = document.getElementById("saveBtn")!
+const splashEl = document.querySelector(".splash") as HTMLElement
+const containerEl = document.querySelector(".container") as HTMLElement
 
 // ---- File Loading ----
 fileInput.addEventListener("change", async (e) => {
@@ -61,6 +63,8 @@ fileInput.addEventListener("change", async (e) => {
         Spectrogram.updateFreqAxis()
         Spectrogram.updateTimeBar()
         UI.hideLoading()
+        splashEl.classList.add("hidden")
+        containerEl.classList.add("visible")
     } catch (err) {
         UI.hideLoading()
         alert("Error loading file: " + (err as Error).message)
