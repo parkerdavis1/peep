@@ -57,6 +57,13 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+h1 {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 0 12px;
+}
+
 /* ---- Global file input (hidden; triggered by labels) ---- */
 #fileInput {
   display: none;
@@ -72,21 +79,21 @@ body {
   padding: 24px;
   text-align: center;
   gap: 20px;
-}
 
-.splash h1 {
-  font-size: 32px;
-  font-weight: 700;
-  padding: 0;
-}
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    padding: 0;
+  }
 
-.splash p {
-  font-size: 16px;
-  color: var(--text-secondary);
-}
+  p {
+    font-size: 16px;
+    color: var(--text-secondary);
+  }
 
-.splash.hidden {
-  display: none;
+  &.hidden {
+    display: none;
+  }
 }
 
 /* ---- Main container (hidden until file loaded) ---- */
@@ -94,20 +101,13 @@ body {
   display: none;
   margin: 0 auto;
   padding: 12px;
+
+  &.visible {
+    display: block;
+  }
 }
 
-.container.visible {
-  display: block;
-}
-
-h1 {
-  font-size: 18px;
-  font-weight: 600;
-  text-align: center;
-  padding: 8px 0 12px;
-}
-
-/* ---- File input ---- */
+/* ---- File section ---- */
 .file-section {
   text-align: center;
   margin-bottom: 12px;
@@ -123,14 +123,14 @@ h1 {
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
-}
 
-.file-button:active {
-  background: var(--accent-hover);
-}
+  &:active {
+    background: var(--accent-hover);
+  }
 
-.file-button input {
-  display: none;
+  input {
+    display: none;
+  }
 }
 
 .file-info {
@@ -143,9 +143,10 @@ h1 {
 .spectrogram-section {
   display: none;
   margin-bottom: 12px;
-}
-.spectrogram-section.visible {
-  display: block;
+
+  &.visible {
+    display: block;
+  }
 }
 
 .spectrogram-wrapper {
@@ -190,21 +191,21 @@ h1 {
   width: 1px;
   height: 4px;
   background: var(--border);
-}
 
-.time-tick.major {
-  height: 12px;
-  background: var(--text-secondary);
-}
+  &.major {
+    height: 12px;
+    background: var(--text-secondary);
+  }
 
-.time-tick span {
-  position: absolute;
-  padding: 0.25rem;
-  font-size: 9px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
+  span {
+    position: absolute;
+    padding: 0.25rem;
+    font-size: 9px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
 }
 
 canvas#spectrogram {
@@ -213,7 +214,7 @@ canvas#spectrogram {
   image-rendering: pixelated;
 }
 
-/* ---- Frequency axis labels ---- */
+/* ---- Frequency axis ---- */
 .freq-axis {
   position: relative;
   flex-shrink: 0;
@@ -221,12 +222,12 @@ canvas#spectrogram {
   background: var(--surface);
   border-right: 1px solid var(--border);
   pointer-events: none;
-}
 
-.freq-axis::before {
-  content: "";
-  display: block;
-  height: var(--time-bar-height);
+  &::before {
+    content: "";
+    display: block;
+    height: var(--time-bar-height);
+  }
 }
 
 .freq-label {
@@ -248,9 +249,11 @@ canvas#spectrogram {
   background: var(--trim-overlay);
   pointer-events: none;
 }
+
 .trim-overlay-left {
   left: 0;
 }
+
 .trim-overlay-right {
   right: 0;
 }
@@ -264,27 +267,29 @@ canvas#spectrogram {
   cursor: ew-resize;
   z-index: 10;
   touch-action: none;
-}
-.trim-handle::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 44px;
-  height: 44px;
-}
-.trim-handle::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 14px;
-  height: 28px;
-  border-radius: 3px;
-  border: 2px solid var(--handle-color);
-  background: var(--surface);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 28px;
+    border-radius: 3px;
+    border: 2px solid var(--handle-color);
+    background: var(--surface);
+  }
 }
 
 .playback-cursor {
@@ -335,6 +340,7 @@ canvas#spectrogram {
   justify-content: center;
   margin: 8px 0;
 }
+
 .zoom-btn {
   width: 40px;
   height: 40px;
@@ -348,10 +354,12 @@ canvas#spectrogram {
   align-items: center;
   justify-content: center;
   color: var(--text);
+
+  &:active {
+    background: var(--button-active);
+  }
 }
-.zoom-btn:active {
-  background: var(--button-active);
-}
+
 .zoom-level {
   font-size: 13px;
   color: var(--text-secondary);
@@ -381,9 +389,10 @@ canvas#spectrogram {
   align-items: center;
   justify-content: center;
   transition: background 0.15s;
-}
-.play-btn:active {
-  background: var(--accent-hover);
+
+  &:active {
+    background: var(--accent-hover);
+  }
 }
 
 .rewind-btn {
@@ -398,9 +407,10 @@ canvas#spectrogram {
   align-items: center;
   justify-content: center;
   color: var(--text);
-}
-.rewind-btn:active {
-  background: var(--button-active);
+
+  &:active {
+    background: var(--button-active);
+  }
 }
 
 .time-display {
@@ -429,9 +439,10 @@ canvas#spectrogram {
   padding: 8px 0;
   border-bottom: 1px solid var(--border);
   gap: 10px;
-}
-.setting-row:last-child {
-  border-bottom: none;
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .setting-label {
@@ -461,15 +472,16 @@ input[type="range"] {
   background: var(--border);
   border-radius: 3px;
   outline: none;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--accent);
-  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
 }
 
 input[type="checkbox"] {
@@ -495,13 +507,15 @@ input[type="checkbox"] {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
-}
-.save-btn:active {
-  background: var(--save-color-active);
-}
-.save-btn:disabled {
-  background: var(--save-color-active);
-  cursor: not-allowed;
+
+  &:active {
+    background: var(--save-color-active);
+  }
+
+  &:disabled {
+    background: var(--save-color-active);
+    cursor: not-allowed;
+  }
 }
 
 /* ---- Loading overlay ---- */
@@ -513,26 +527,28 @@ input[type="checkbox"] {
   z-index: 100;
   align-items: center;
   justify-content: center;
-}
-.loading-overlay.visible {
-  display: flex;
-}
 
-.loading-box {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 24px 32px;
-  text-align: center;
-  font-size: 15px;
-}
-.loading-box .spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 12px;
+  &.visible {
+    display: flex;
+  }
+
+  .loading-box {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 24px 32px;
+    text-align: center;
+    font-size: 15px;
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+  }
 }
 
 @keyframes spin {
