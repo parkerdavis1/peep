@@ -1,4 +1,4 @@
-import { expect, test, describe, beforeEach, afterEach } from 'vitest';
+import { expect, test, describe, beforeEach, afterEach, vi } from 'vitest';
 import { mount, unmount } from 'svelte';
 import Spectrogram from './Spectrogram.svelte';
 import { appState } from '$lib/state.svelte.ts';
@@ -184,5 +184,126 @@ describe('Spectrogram Trim Markers', () => {
 		await tick();
 
 		expect(appState.markerPos).toBeCloseTo(0.75, 2);
+	});
+
+	test('dragging trim handle stops playback', async () => {
+		component = mount(Spectrogram, {
+			target
+		});
+
+		appState.markerPos = 0.5;
+		appState.trimStart = 0.2;
+		appState.trimEnd = 0.8;
+		appState.spectrogramTotalWidth = 1000;
+		appState.isPlaying = true; // Simulate that audio is playing
+
+		const handleLeft = target.querySelector('.trim-handle[aria-label="Trim start"]') as HTMLElement;
+		expect(handleLeft).not.toBeNull();
+
+		const handleRight = target.querySelector('.trim-handle[aria-label="Trim end"]') as HTMLElement;
+		expect(handleRight).not.toBeNull();
+
+		// In jsdom environment, setPointerCapture might fail so we mock it
+		handleLeft.setPointerCapture = vi.fn();
+		handleRight.setPointerCapture = vi.fn();
+
+		// Simulate pointer down on left handle
+		const pointerDownEvent = new PointerEvent('pointerdown', { pointerId: 1, bubbles: true });
+		handleLeft.dispatchEvent(pointerDownEvent);
+		await tick();
+
+		expect(appState.isPlaying).toBe(false);
+
+		// Also check right handle
+		appState.isPlaying = true;
+
+		const pointerDownEventRight = new PointerEvent('pointerdown', { pointerId: 2, bubbles: true });
+		handleRight.dispatchEvent(pointerDownEventRight);
+		await tick();
+
+		expect(appState.isPlaying).toBe(false);
+	});
+
+	test('shows 3-second buffer indicator when dragging left trim handle', async () => {
+		component = mount(Spectrogram, {
+			target
+		});
+
+		appState.trimStart = 0.2;
+		appState.trimEnd = 0.8;
+		appState.spectrogramTotalWidth = 1000;
+		// 10 seconds duration, so 3 seconds = 30% of width = 300px
+		appState.audioBuffer = new AudioBuffer({ length: 44100 * 10, sampleRate: 44100 });
+
+		await tick();
+
+		// Initially, no indicator should be shown
+		expect(target.querySelector('.buffer-indicator')).toBeNull();
+
+		const handleLeft = target.querySelector('.trim-handle[aria-label="Trim start"]') as HTMLElement;
+		handleLeft.setPointerCapture = vi.fn();
+
+		// Simulate pointer down on left handle
+		const pointerDownEvent = new PointerEvent('pointerdown', { pointerId: 1, bubbles: true });
+		handleLeft.dispatchEvent(pointerDownEvent);
+		await tick();
+
+		// Start buffer indicator should be visible
+		const startBuffer = target.querySelector('.buffer-indicator.start-buffer') as HTMLElement;
+		expect(startBuffer).not.toBeNull();
+		// width should be 300px (30% of 1000)
+		expect(startBuffer.style.width).toBe('300px');
+		
+		// End buffer indicator should NOT be visible
+		expect(target.querySelector('.buffer-indicator.end-buffer')).toBeNull();
+
+		// Release drag
+		const pointerUpEvent = new PointerEvent('pointerup', { bubbles: true });
+		document.dispatchEvent(pointerUpEvent);
+		await tick();
+
+		// Indicator should disappear
+		expect(target.querySelector('.buffer-indicator')).toBeNull();
+	});
+
+	test('shows 3-second buffer indicator when dragging right trim handle', async () => {
+		component = mount(Spectrogram, {
+			target
+		});
+
+		appState.trimStart = 0.2;
+		appState.trimEnd = 0.8;
+		appState.spectrogramTotalWidth = 1000;
+		// 10 seconds duration, so 3 seconds = 30% of width = 300px
+		appState.audioBuffer = new AudioBuffer({ length: 44100 * 10, sampleRate: 44100 });
+
+		await tick();
+
+		// Initially, no indicator should be shown
+		expect(target.querySelector('.buffer-indicator')).toBeNull();
+
+		const handleRight = target.querySelector('.trim-handle[aria-label="Trim end"]') as HTMLElement;
+		handleRight.setPointerCapture = vi.fn();
+
+		// Simulate pointer down on right handle
+		const pointerDownEvent = new PointerEvent('pointerdown', { pointerId: 1, bubbles: true });
+		handleRight.dispatchEvent(pointerDownEvent);
+		await tick();
+
+		// End buffer indicator should be visible
+		const endBuffer = target.querySelector('.buffer-indicator.end-buffer') as HTMLElement;
+		expect(endBuffer).not.toBeNull();
+		expect(endBuffer.style.width).toBe('300px');
+		
+		// Start buffer indicator should NOT be visible
+		expect(target.querySelector('.buffer-indicator.start-buffer')).toBeNull();
+
+		// Release drag
+		const pointerUpEvent = new PointerEvent('pointerup', { bubbles: true });
+		document.dispatchEvent(pointerUpEvent);
+		await tick();
+
+		// Indicator should disappear
+		expect(target.querySelector('.buffer-indicator')).toBeNull();
 	});
 });

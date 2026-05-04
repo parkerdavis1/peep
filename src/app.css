@@ -24,6 +24,7 @@
   --button-text: #fff;
   --save-color: #36824b;
   --save-color-active: #2a653a;
+  --buffer-indicator: var(--accent);
 
   --time-bar-height: 16px;
 
@@ -245,6 +246,24 @@ h1 {
 
 .trim-overlay-right {
   right: 0;
+}
+
+/* ---- Buffer indicators ---- */
+.buffer-indicator {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--buffer-indicator) 30%, transparent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.start-buffer {
+  border-right: 2px solid var(--buffer-indicator);
+}
+
+.end-buffer {
+  border-left: 2px solid var(--buffer-indicator);
 }
 
 .trim-handle {

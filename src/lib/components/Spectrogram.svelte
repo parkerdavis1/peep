@@ -1,7 +1,7 @@
 <script lang="ts">
   import { appState } from '$lib/state.svelte.ts';
   import { initSpectrogram, render, updateTimeBar } from '$lib/spectrogram.ts';
-  import { initPlayback, updateMarker, updateTimeDisplay } from '$lib/playback.ts';
+  import { initPlayback, updateMarker, updateTimeDisplay, stop } from '$lib/playback.ts';
 
   let { wrapperEl = $bindable<HTMLElement | undefined>(undefined) }: { wrapperEl?: HTMLElement } = $props();
 
@@ -17,10 +17,17 @@
   let markerLeftPx = $derived(appState.markerPos * appState.spectrogramTotalWidth);
   let trimLeftWidth = $derived(appState.trimStart * appState.spectrogramTotalWidth);
   let trimRightWidth = $derived((1 - appState.trimEnd) * appState.spectrogramTotalWidth);
+  let trimEndPx = $derived(appState.trimEnd * appState.spectrogramTotalWidth);
   let handleLeftLeft = $derived(appState.trimStart * appState.spectrogramTotalWidth - 2);
   let handleRightLeft = $derived(appState.trimEnd * appState.spectrogramTotalWidth - 2);
 
-  let dragging: 'left' | 'right' | null = null;
+  let threeSecondWidthPx = $derived(
+    appState.audioBuffer && appState.audioBuffer.duration > 0
+      ? (3 / appState.audioBuffer.duration) * appState.spectrogramTotalWidth
+      : 0
+  );
+
+  let dragging = $state<'left' | 'right' | null>(null);
 
   // Single effect: init (idempotent) + render on data/zoom change.
   // bind:this has already set all refs by the time this first runs.
@@ -72,12 +79,14 @@
   }
 
   function handlePointerDownLeft(e: PointerEvent) {
+    if (appState.isPlaying) stop(true);
     if (handleLeftEl && handleLeftEl.setPointerCapture) handleLeftEl.setPointerCapture(e.pointerId);
     e.preventDefault();
     dragging = 'left';
   }
 
   function handlePointerDownRight(e: PointerEvent) {
+    if (appState.isPlaying) stop(true);
     if (handleRightEl && handleRightEl.setPointerCapture) handleRightEl.setPointerCapture(e.pointerId);
     e.preventDefault();
     dragging = 'right';
@@ -134,6 +143,23 @@
       <canvas bind:this={canvasEl}></canvas>
       <div class="trim-overlay-left" style:width="{trimLeftWidth}px"></div>
       <div class="trim-overlay-right" style:width="{trimRightWidth}px"></div>
+      
+      {#if dragging === 'left' && threeSecondWidthPx > 0}
+        <div
+          class="buffer-indicator start-buffer"
+          style:left="{trimLeftWidth}px"
+          style:width="{threeSecondWidthPx}px"
+        ></div>
+      {/if}
+
+      {#if dragging === 'right' && threeSecondWidthPx > 0}
+        <div
+          class="buffer-indicator end-buffer"
+          style:left="{trimEndPx - threeSecondWidthPx}px"
+          style:width="{threeSecondWidthPx}px"
+        ></div>
+      {/if}
+
       <div
         class="trim-handle"
         bind:this={handleLeftEl}

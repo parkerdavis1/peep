@@ -139,4 +139,21 @@ describe('Playback Logic', () => {
 		expect(appState.markerPos).toBe(0.2); // Resets
 		expect(appState.isPlaying).toBe(true); // Restarts
 	});
+
+	test('playback does not go beyond trim handles', () => {
+		appState.markerPos = 0.5; // Starts in the middle
+		appState.trimStart = 0.2;
+		appState.trimEnd = 0.8;
+
+		start();
+
+		// sourceNode is set during start()
+		const sourceNode = appState.sourceNode as any;
+		
+		// The duration is 10s.
+		// Start sec: 0.5 * 10 = 5s
+		// Trim end: 0.8 * 10 = 8s
+		// Remaining duration should be 3s.
+		expect(sourceNode.start).toHaveBeenCalledWith(0, 5, 3);
+	});
 });
