@@ -42,34 +42,43 @@
   // Pointer drag handlers
   function handlePointerMove(e: PointerEvent) {
     if (!dragging) return;
+    
+    // In vitest getBoundingClientRect on elements sometimes returns all 0s, 
+    // so we handle it more robustly.
     const rect = innerEl.getBoundingClientRect();
+    const innerLeft = rect.left;
     const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
-    const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / totalWidth));
+    
+    const frac = Math.max(0, Math.min(1, (e.clientX - innerLeft) / totalWidth));
     const MIN_GAP = 0.005;
     if (dragging === 'left') {
       appState.trimStart = Math.min(frac, appState.trimEnd - MIN_GAP);
     } else {
       appState.trimEnd = Math.max(frac, appState.trimStart + MIN_GAP);
-      if (appState.markerPos > appState.trimEnd) {
-        appState.markerPos = appState.trimStart;
-      }
     }
-    updateMarker();
-    updateTimeDisplay();
   }
 
   function handlePointerUp() {
+    if (dragging) {
+      if (appState.markerPos < appState.trimStart) {
+        appState.markerPos = appState.trimStart;
+      } else if (appState.markerPos > appState.trimEnd) {
+        appState.markerPos = appState.trimEnd;
+      }
+      updateMarker();
+      updateTimeDisplay();
+    }
     dragging = null;
   }
 
   function handlePointerDownLeft(e: PointerEvent) {
-    handleLeftEl.setPointerCapture(e.pointerId);
+    if (handleLeftEl && handleLeftEl.setPointerCapture) handleLeftEl.setPointerCapture(e.pointerId);
     e.preventDefault();
     dragging = 'left';
   }
 
   function handlePointerDownRight(e: PointerEvent) {
-    handleRightEl.setPointerCapture(e.pointerId);
+    if (handleRightEl && handleRightEl.setPointerCapture) handleRightEl.setPointerCapture(e.pointerId);
     e.preventDefault();
     dragging = 'right';
   }

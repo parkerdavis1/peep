@@ -101,6 +101,7 @@ declare module '$env/static/private' {
 	export const COLORTERM: string;
 	export const npm_node_execpath: string;
 	export const NODE_ENV: string;
+	export const PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: string;
 }
 
 /**
@@ -250,6 +251,7 @@ declare module '$env/dynamic/private' {
 		COLORTERM: string;
 		npm_node_execpath: string;
 		NODE_ENV: string;
+		PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}
