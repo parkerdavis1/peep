@@ -1,6 +1,6 @@
 {
-    "name": "eBird Sound Editor",
-    "short_name": "eBird Sound Editor",
+    "name": "Peep",
+    "short_name": "Peep",
     "icons": [
         {
             "src": "/icons/web-app-manifest-192x192.png",
@@ -15,7 +15,6 @@
             "purpose": "maskable"
         }
     ],
-    "theme_color": "#f2fafd",
     "background_color": "#f2fafd",
     "display": "standalone"
 }
