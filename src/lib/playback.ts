@@ -56,7 +56,16 @@ export function start(): void {
 	if (!isFinite(clampedMarker) || isNaN(clampedMarker)) {
 		clampedMarker = appState.trimStart;
 	}
-	clampedMarker = Math.max(appState.trimStart, Math.min(appState.trimEnd, clampedMarker));
+	
+	// If the marker is outside the trim bounds (or very close to the end), restart from trimStart
+	const marginSec = 0.01;
+	const marginFrac = dur > 0 ? marginSec / dur : 0;
+	if (clampedMarker < appState.trimStart || clampedMarker >= appState.trimEnd - marginFrac) {
+		clampedMarker = appState.trimStart;
+		appState.markerPos = clampedMarker;
+	} else {
+		clampedMarker = Math.max(appState.trimStart, Math.min(appState.trimEnd, clampedMarker));
+	}
 	
 	const startSec = clampedMarker * dur;
 	const trimStartSec = appState.trimStart * dur;
@@ -64,7 +73,7 @@ export function start(): void {
 	const remainingDur = appState.trimEnd * dur - startSec;
 	const offsetInRegion = startSec - trimStartSec;
 
-	// Guard against zero-length region (marker at trimEnd)
+	// Guard against zero-length region
 	if (remainingDur <= 0.01) return;
 
 	const source = ctx.createBufferSource();

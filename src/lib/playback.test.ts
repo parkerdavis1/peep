@@ -156,4 +156,26 @@ describe('Playback Logic', () => {
 		// Remaining duration should be 3s.
 		expect(sourceNode.start).toHaveBeenCalledWith(0, 5, 3);
 	});
+
+	test('playback restarts from trimStart if marker is outside trim bounds', () => {
+		// Test marker before trimStart
+		appState.trimStart = 0.2;
+		appState.trimEnd = 0.8;
+		appState.markerPos = 0.1;
+		start();
+
+		let sourceNode = appState.sourceNode as any;
+		expect(sourceNode.start).toHaveBeenCalledWith(0, 2, 6);
+		expect(appState.markerPos).toBe(0.2);
+		
+		stop();
+
+		// Test marker exactly at or after trimEnd
+		appState.markerPos = 0.85;
+		start();
+
+		sourceNode = appState.sourceNode as any;
+		expect(sourceNode.start).toHaveBeenCalledWith(0, 2, 6);
+		expect(appState.markerPos).toBe(0.2);
+	});
 });
