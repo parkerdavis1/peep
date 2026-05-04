@@ -146,4 +146,43 @@ describe('Spectrogram Trim Markers', () => {
 		// After release, markerPos should be snapped to the new trimEnd
 		expect(appState.markerPos).toBeCloseTo(0.4, 2);
 	});
+
+	test('clicking spectrogram moves playback marker', async () => {
+		component = mount(Spectrogram, {
+			target
+		});
+		
+		// The component requires elements to be bound before clicks can get rects
+		await tick();
+
+		appState.markerPos = 0.5;
+		appState.trimStart = 0.0;
+		appState.trimEnd = 1.0;
+		appState.spectrogramTotalWidth = 1000;
+		// AudioBuffer must be truthy for handleInnerClick to process
+		appState.audioBuffer = new AudioBuffer({ length: 1, sampleRate: 44100 });
+
+		const innerEl = target.querySelector('.spectrogram-inner') as HTMLElement;
+		
+		// Wait another tick to ensure DOM binds are settled
+		await tick();
+		
+		// Setup mock bounding box for calculatePointerFraction
+		innerEl.getBoundingClientRect = () => ({
+			left: 0, right: 1000, top: 0, bottom: 500,
+			width: 1000, height: 500, x: 0, y: 0, toJSON: () => {}
+		});
+
+		// Simulate click on the inner at 75% width
+		const clickEvent = new MouseEvent('click', { 
+			clientX: 750,
+			clientY: 250,
+			detail: 1, // Make sure it doesn't look like a keyboard click
+			bubbles: true 
+		});
+		innerEl.dispatchEvent(clickEvent);
+		await tick();
+
+		expect(appState.markerPos).toBeCloseTo(0.75, 2);
+	});
 });
