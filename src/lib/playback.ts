@@ -52,7 +52,12 @@ export function start(): void {
 	const ctx = appState.audioCtx!;
 	const dur = buf.duration;
 
-	const clampedMarker = Math.max(appState.trimStart, Math.min(appState.trimEnd, appState.markerPos));
+	let clampedMarker = appState.markerPos;
+	if (!isFinite(clampedMarker) || isNaN(clampedMarker)) {
+		clampedMarker = appState.trimStart;
+	}
+	clampedMarker = Math.max(appState.trimStart, Math.min(appState.trimEnd, clampedMarker));
+	
 	const startSec = clampedMarker * dur;
 	const trimStartSec = appState.trimStart * dur;
 	const fullRegionDur = appState.trimEnd * dur - trimStartSec;

@@ -40,7 +40,7 @@ export function applyFadeEnvelope(
 	const t0 = timeOffset;
 	const remainingDur = regionDur - offsetInRegion;
 
-	if (!fadeEnabled) {
+	if (!fadeEnabled || regionDur <= 0 || fadeDur <= 0) {
 		gainNode.gain.setValueAtTime(1, t0);
 		return;
 	}
@@ -52,20 +52,30 @@ export function applyFadeEnvelope(
 	let gainAtOffset: number;
 	if (offsetInRegion <= 0) {
 		gainAtOffset = SILENCE;
-	} else if (offsetInRegion < fadeIn) {
+	} else if (offsetInRegion < fadeIn && fadeIn > 0) {
 		gainAtOffset = SILENCE + (1 - SILENCE) * (offsetInRegion / fadeIn);
 	} else if (offsetInRegion <= fadeOutStart) {
 		gainAtOffset = 1;
 	} else {
-		const fadeProg = (offsetInRegion - fadeOutStart) / (regionDur - fadeOutStart);
-		gainAtOffset = 1 - (1 - SILENCE) * fadeProg;
+		const denom = regionDur - fadeOutStart;
+		if (denom > 0) {
+			const fadeProg = (offsetInRegion - fadeOutStart) / denom;
+			gainAtOffset = 1 - (1 - SILENCE) * fadeProg;
+		} else {
+			gainAtOffset = SILENCE;
+		}
+	}
+
+	// Guarantee it's a valid finite number before sending to Web Audio API
+	if (!isFinite(gainAtOffset) || isNaN(gainAtOffset)) {
+		gainAtOffset = 1;
 	}
 
 	// Schedule gain starting from the playhead's position in the envelope
 	gainNode.gain.setValueAtTime(gainAtOffset, t0);
 
 	// Complete the fade-in if we're still in it
-	if (offsetInRegion < fadeIn) {
+	if (offsetInRegion < fadeIn && fadeIn > 0) {
 		gainNode.gain.linearRampToValueAtTime(1, t0 + (fadeIn - offsetInRegion));
 	}
 
@@ -75,5 +85,8 @@ export function applyFadeEnvelope(
 	}
 
 	// Fade out to silence at the trim end
-	gainNode.gain.linearRampToValueAtTime(SILENCE, t0 + remainingDur);
+	const fadeOutEnd = t0 + remainingDur;
+	if (fadeOutEnd > t0 && isFinite(fadeOutEnd)) {
+		gainNode.gain.linearRampToValueAtTime(SILENCE, fadeOutEnd);
+	}
 }

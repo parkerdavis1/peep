@@ -43,7 +43,7 @@
   function handlePointerMove(e: PointerEvent) {
     if (!dragging) return;
     const rect = innerEl.getBoundingClientRect();
-    const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 0;
+    const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
     const frac = Math.max(0, Math.min(1, (e.clientX - rect.left) / totalWidth));
     const MIN_GAP = 0.005;
     if (dragging === 'left') {
@@ -78,17 +78,28 @@
     if (appState.isPlaying) return;
     if (!appState.audioBuffer) return;
     if ((e.target as HTMLElement).classList.contains('trim-handle')) return;
-    const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 0;
+    
+    // Ignore keyboard-triggered clicks (which have clientX=0, clientY=0 and detail=0)
+    // as we handle Space explicitly for playback.
+    if (e.clientX === 0 && e.clientY === 0 && e.detail === 0) return;
+    if (typeof e.clientX !== 'number') return;
+    
+    const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
     const rect = innerEl.getBoundingClientRect();
     const rawFrac = (e.clientX - rect.left) / totalWidth;
-    appState.markerPos = Math.max(appState.trimStart, Math.min(appState.trimEnd, rawFrac));
-    updateMarker();
-    updateTimeDisplay();
+    
+    if (isFinite(rawFrac) && !isNaN(rawFrac)) {
+      appState.markerPos = Math.max(appState.trimStart, Math.min(appState.trimEnd, rawFrac));
+      updateMarker();
+      updateTimeDisplay();
+    }
   }
 
   function handleInnerKeydown(e: KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
-      handleInnerClick(e as unknown as MouseEvent);
+      // Space is handled globally for Play/Pause.
+      // Keyboard events don't have coordinates, so we don't move the marker.
+      e.preventDefault();
     }
   }
 
