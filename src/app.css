@@ -32,6 +32,9 @@
   --buffer-indicator: var(--accent);
 
   --time-bar-height: 16px;
+  --width-m: 500px;
+  --width-lg: 800px;
+  --border-radius: 8px;
 
   @media (prefers-color-scheme: dark) {
     --bg: #15202b;
@@ -106,6 +109,12 @@ header {
   flex-direction: row;
   align-items: start;
   justify-content: space-between;
+  max-width: var(--width-lg);
+  margin-inline: auto;
+}
+
+.peep-logo {
+  color: var(--text);
 }
 
 /* ---- File section ---- */
@@ -124,6 +133,7 @@ header {
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
+  border: 1px solid var(--border);
 
   &:active {
     background: var(--accent-active);
@@ -157,6 +167,8 @@ header {
 /* ---- Spectrogram ---- */
 .spectrogram-section {
   margin-bottom: 12px;
+  max-width: var(--width-lg);
+  margin-inline: auto;
 }
 
 .spectrogram-wrapper {
@@ -356,7 +368,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  column-gap: 4rem;
+  column-gap: 1.75rem;
   margin: 8px 0;
   flex-wrap: wrap;
 }
@@ -367,13 +379,15 @@ header {
   align-items: center;
   justify-content: center;
   margin: 8px 0;
+  gap: 0.5rem;
 }
 
 .zoom-btn {
-  width: 40px;
-  height: 40px;
+  --dim: 2.5rem;
+  width: var(--dim);
+  height: var(--dim);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   background: var(--surface);
   font-size: 20px;
   font-weight: 600;
@@ -389,9 +403,8 @@ header {
 }
 
 .zoom-level {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-secondary);
-  min-width: 40px;
   text-align: center;
 }
 
@@ -427,7 +440,7 @@ header {
   width: 40px;
   height: 40px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   background: var(--surface);
   font-size: 18px;
   cursor: pointer;
@@ -442,21 +455,21 @@ header {
 }
 
 .time-display {
-  font-size: 14px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
-  min-width: 120px;
   text-align: center;
+  min-width: 90px;
 }
 
 /* ---- Settings panel ---- */
 .settings {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px;
+  border-radius: var(--border-radius);
+  padding: 0.5rem 1rem;
   margin: 12px 0;
-  max-width: 500px;
+  max-width: var(--width-m);
   margin-inline: auto;
 }
 
@@ -525,12 +538,15 @@ input[type="checkbox"] {
 }
 
 .save-btn {
-  display: inline-block;
-  padding: 14px 32px;
+  display: flex;
+  margin-inline: auto;
+  justify-content: space-around;
+  align-items: center;
+  padding: 1rem 2rem;
   background: var(--save-color);
   color: var(--button-text);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
