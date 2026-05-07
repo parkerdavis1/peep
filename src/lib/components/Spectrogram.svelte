@@ -1,9 +1,16 @@
 <script lang="ts">
-  import { appState } from '$lib/state.svelte.ts';
-  import { initSpectrogram, render, updateTimeBar } from '$lib/spectrogram.ts';
-  import { initPlayback, updateMarker, updateTimeDisplay, stop } from '$lib/playback.ts';
+  import { appState } from "$lib/state.svelte.ts";
+  import { initSpectrogram, render, updateTimeBar } from "$lib/spectrogram.ts";
+  import {
+    initPlayback,
+    updateMarker,
+    updateTimeDisplay,
+    stop,
+  } from "$lib/playback.ts";
 
-  let { wrapperEl = $bindable<HTMLElement | undefined>(undefined) }: { wrapperEl?: HTMLElement } = $props();
+  let {
+    wrapperEl = $bindable<HTMLElement | undefined>(undefined),
+  }: { wrapperEl?: HTMLElement } = $props();
 
   // Plain let refs — set by bind:this synchronously during mount, before any $effect runs
   let canvasEl: HTMLCanvasElement;
@@ -14,28 +21,53 @@
   let handleRightEl: HTMLElement;
   let playbackCursorEl: HTMLElement;
 
-  let markerLeftPx = $derived(appState.markerPos * appState.spectrogramTotalWidth);
-  let trimLeftWidth = $derived(appState.trimStart * appState.spectrogramTotalWidth);
-  let trimRightWidth = $derived((1 - appState.trimEnd) * appState.spectrogramTotalWidth);
+  let markerLeftPx = $derived(
+    appState.markerPos * appState.spectrogramTotalWidth,
+  );
+  let trimLeftWidth = $derived(
+    appState.trimStart * appState.spectrogramTotalWidth,
+  );
+  let trimRightWidth = $derived(
+    (1 - appState.trimEnd) * appState.spectrogramTotalWidth,
+  );
   let trimEndPx = $derived(appState.trimEnd * appState.spectrogramTotalWidth);
-  let handleLeftLeft = $derived(appState.trimStart * appState.spectrogramTotalWidth - 2);
-  let handleRightLeft = $derived(appState.trimEnd * appState.spectrogramTotalWidth - 2);
+  let handleLeftLeft = $derived(
+    appState.trimStart * appState.spectrogramTotalWidth - 2,
+  );
+  let handleRightLeft = $derived(
+    appState.trimEnd * appState.spectrogramTotalWidth - 2,
+  );
 
   let threeSecondWidthPx = $derived(
     appState.audioBuffer && appState.audioBuffer.duration > 0
       ? (3 / appState.audioBuffer.duration) * appState.spectrogramTotalWidth
-      : 0
+      : 0,
   );
 
-  let dragging = $state<'left' | 'right' | null>(null);
+  let dragging = $state<"left" | "right" | null>(null);
 
   // Single effect: init (idempotent) + render on data/zoom change.
   // bind:this has already set all refs by the time this first runs.
   $effect(() => {
-    if (!canvasEl || !innerEl || !wrapperEl || !timeRulerEl || !freqAxisEl || !playbackCursorEl) return;
+    if (
+      !canvasEl ||
+      !innerEl ||
+      !wrapperEl ||
+      !timeRulerEl ||
+      !freqAxisEl ||
+      !playbackCursorEl
+    )
+      return;
 
-    const ctx = canvasEl.getContext('2d')!;
-    initSpectrogram({ canvas: canvasEl, canvasCtx: ctx, inner: innerEl, wrapper: wrapperEl, timeRuler: timeRulerEl, freqAxis: freqAxisEl });
+    const ctx = canvasEl.getContext("2d")!;
+    initSpectrogram({
+      canvas: canvasEl,
+      canvasCtx: ctx,
+      inner: innerEl,
+      wrapper: wrapperEl,
+      timeRuler: timeRulerEl,
+      freqAxis: freqAxisEl,
+    });
     initPlayback(playbackCursorEl, wrapperEl, innerEl);
 
     const data = appState.spectrogramData;
@@ -49,16 +81,17 @@
   // Pointer drag handlers
   function handlePointerMove(e: PointerEvent) {
     if (!dragging) return;
-    
-    // In vitest getBoundingClientRect on elements sometimes returns all 0s, 
+
+    // In vitest getBoundingClientRect on elements sometimes returns all 0s,
     // so we handle it more robustly.
     const rect = innerEl.getBoundingClientRect();
     const innerLeft = rect.left;
-    const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
-    
+    const totalWidth =
+      appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
+
     const frac = Math.max(0, Math.min(1, (e.clientX - innerLeft) / totalWidth));
     const MIN_GAP = 0.005;
-    if (dragging === 'left') {
+    if (dragging === "left") {
       appState.trimStart = Math.min(frac, appState.trimEnd - MIN_GAP);
     } else {
       appState.trimEnd = Math.max(frac, appState.trimStart + MIN_GAP);
@@ -80,41 +113,47 @@
 
   function handlePointerDownLeft(e: PointerEvent) {
     if (appState.isPlaying) stop(true);
-    if (handleLeftEl && handleLeftEl.setPointerCapture) handleLeftEl.setPointerCapture(e.pointerId);
+    if (handleLeftEl && handleLeftEl.setPointerCapture)
+      handleLeftEl.setPointerCapture(e.pointerId);
     e.preventDefault();
-    dragging = 'left';
+    dragging = "left";
   }
 
   function handlePointerDownRight(e: PointerEvent) {
     if (appState.isPlaying) stop(true);
-    if (handleRightEl && handleRightEl.setPointerCapture) handleRightEl.setPointerCapture(e.pointerId);
+    if (handleRightEl && handleRightEl.setPointerCapture)
+      handleRightEl.setPointerCapture(e.pointerId);
     e.preventDefault();
-    dragging = 'right';
+    dragging = "right";
   }
 
   function handleInnerClick(e: MouseEvent) {
     if (appState.isPlaying) return;
     if (!appState.audioBuffer) return;
-    if ((e.target as HTMLElement).classList.contains('trim-handle')) return;
-    
+    if ((e.target as HTMLElement).classList.contains("trim-handle")) return;
+
     // Ignore keyboard-triggered clicks (which have clientX=0, clientY=0 and detail=0)
     // as we handle Space explicitly for playback.
     if (e.clientX === 0 && e.clientY === 0 && e.detail === 0) return;
-    if (typeof e.clientX !== 'number') return;
-    
-    const totalWidth = appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
+    if (typeof e.clientX !== "number") return;
+
+    const totalWidth =
+      appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
     const rect = innerEl.getBoundingClientRect();
     const rawFrac = (e.clientX - rect.left) / totalWidth;
-    
+
     if (isFinite(rawFrac) && !isNaN(rawFrac)) {
-      appState.markerPos = Math.max(appState.trimStart, Math.min(appState.trimEnd, rawFrac));
+      appState.markerPos = Math.max(
+        appState.trimStart,
+        Math.min(appState.trimEnd, rawFrac),
+      );
       updateMarker();
       updateTimeDisplay();
     }
   }
 
   function handleInnerKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       // Space is handled globally for Play/Pause.
       // Keyboard events don't have coordinates, so we don't move the marker.
       e.preventDefault();
@@ -126,11 +165,18 @@
   }
 </script>
 
-<svelte:document onpointermove={handlePointerMove} onpointerup={handlePointerUp} />
+<svelte:document
+  onpointermove={handlePointerMove}
+  onpointerup={handlePointerUp}
+/>
 
 <div class="spectrogram-wrapper">
   <div class="freq-axis" bind:this={freqAxisEl}></div>
-  <div class="spectrogram-scroll-wrap" bind:this={wrapperEl} onscroll={handleScroll}>
+  <div
+    class="spectrogram-scroll-wrap"
+    bind:this={wrapperEl}
+    onscroll={handleScroll}
+  >
     <div class="time-ruler" bind:this={timeRulerEl}></div>
     <div
       class="spectrogram-inner"
@@ -143,8 +189,8 @@
       <canvas bind:this={canvasEl}></canvas>
       <div class="trim-overlay-left" style:width="{trimLeftWidth}px"></div>
       <div class="trim-overlay-right" style:width="{trimRightWidth}px"></div>
-      
-      {#if dragging === 'left' && threeSecondWidthPx > 0}
+
+      {#if dragging === "left" && threeSecondWidthPx > 0}
         <div
           class="buffer-indicator start-buffer"
           style:left="{trimLeftWidth}px"
@@ -152,7 +198,7 @@
         ></div>
       {/if}
 
-      {#if dragging === 'right' && threeSecondWidthPx > 0}
+      {#if dragging === "right" && threeSecondWidthPx > 0}
         <div
           class="buffer-indicator end-buffer"
           style:left="{trimEndPx - threeSecondWidthPx}px"
@@ -187,9 +233,13 @@
       <div
         class="playback-marker"
         style:left="{markerLeftPx}px"
-        style:display={appState.audioBuffer ? 'block' : 'none'}
+        style:display={appState.audioBuffer ? "block" : "none"}
       ></div>
-      <div class="playback-cursor" bind:this={playbackCursorEl} style:display="none"></div>
+      <div
+        class="playback-cursor"
+        bind:this={playbackCursorEl}
+        style:display="none"
+      ></div>
     </div>
   </div>
 </div>

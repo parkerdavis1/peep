@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { appState } from '$lib/state.svelte.ts';
+  import { appState } from "$lib/state.svelte.ts";
 </script>
 
 <div class="loading-overlay" class:visible={appState.isLoading}>

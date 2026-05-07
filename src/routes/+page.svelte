@@ -1,20 +1,19 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { appState } from '$lib/state.svelte.ts';
-  import * as Playback from '$lib/playback.ts';
-  import * as SpectrogramLib from '$lib/spectrogram.ts';
-  import * as Processing from '$lib/processing.ts';
-  import SpectrogramComponent from '$lib/components/Spectrogram.svelte';
-  import PlaybackControls from '$lib/components/PlaybackControls.svelte';
-  import Settings from '$lib/components/Settings.svelte';
-  import LoadingOverlay from '$lib/components/LoadingOverlay.svelte';
-    import { FileHeadphone } from '@lucide/svelte';
-    import Peep from '$lib/components/Peep.svelte';
-    import Peep2 from '$lib/components/Peep2.svelte';
+  import { onMount } from "svelte";
+  import { appState } from "$lib/state.svelte.ts";
+  import * as Playback from "$lib/playback.ts";
+  import * as SpectrogramLib from "$lib/spectrogram.ts";
+  import * as Processing from "$lib/processing.ts";
+  import SpectrogramComponent from "$lib/components/Spectrogram.svelte";
+  import PlaybackControls from "$lib/components/PlaybackControls.svelte";
+  import Settings from "$lib/components/Settings.svelte";
+  import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
+  import { FileHeadphone } from "@lucide/svelte";
+  import Peep2 from "$lib/components/Peep2.svelte";
 
   let spectrogramWrapperEl: HTMLElement | undefined = $state();
 
-  const title = 'Peep'
+  const title = "Peep";
 
   // Whether a file is loaded and the editor should be shown
   let fileLoaded = $derived(appState.audioBuffer !== null);
@@ -23,14 +22,15 @@
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
     if (file.size > 200 * 1024 * 1024) {
-      alert('File is too large (max 200 MB)');
+      alert("File is too large (max 200 MB)");
       return;
     }
     appState.ensureAudioCtx();
     Playback.stop();
-    appState.fileName = file.name.replace(/\.wav$/i, '');
-    appState.fileInfoText = file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
-    appState.loadingText = 'Decoding audio...';
+    appState.fileName = file.name.replace(/\.wav$/i, "");
+    appState.fileInfoText =
+      file.name + " (" + (file.size / 1024 / 1024).toFixed(1) + " MB)";
+    appState.loadingText = "Decoding audio...";
     appState.isLoading = true;
 
     try {
@@ -41,7 +41,7 @@
       appState.markerPos = 0;
       appState.zoomLevel = 1;
 
-      appState.loadingText = 'Computing spectrogram...';
+      appState.loadingText = "Computing spectrogram...";
       // Yield to let the browser paint the loading message before blocking compute()
       await new Promise<void>((r) => setTimeout(r, 0));
 
@@ -51,7 +51,7 @@
       appState.isLoading = false;
     } catch (err) {
       appState.isLoading = false;
-      alert('Error loading file: ' + (err as Error).message);
+      alert("Error loading file: " + (err as Error).message);
       console.error(err);
     }
   }
@@ -74,15 +74,19 @@
     if (!spectrogramWrapperEl) return;
     const wrapper = spectrogramWrapperEl;
     const wrapperWidth = wrapper.clientWidth;
+    const buf = appState.audioBuffer;
+    if (!buf) return;
+
     const playheadFrac =
       appState.isPlaying && appState.audioCtx
         ? Math.max(
             0,
             Math.min(
               1,
-              (appState.playOffset + (appState.audioCtx.currentTime - appState.playStartTime)) /
-                buf.duration
-            )
+              (appState.playOffset +
+                (appState.audioCtx.currentTime - appState.playStartTime)) /
+                buf.duration,
+            ),
           )
         : appState.markerPos;
 
@@ -99,18 +103,18 @@
     if (!appState.audioBuffer) return;
     appState.ensureAudioCtx();
     Playback.stop();
-    appState.loadingText = 'Processing audio...';
+    appState.loadingText = "Processing audio...";
     appState.isLoading = true;
     await new Promise((r) => setTimeout(r, 50));
 
     try {
       const rendered = await Processing.process();
       const blob = Processing.encodeWAV(rendered);
-      Processing.downloadBlob(blob, appState.fileName + '_edited.wav');
+      Processing.downloadBlob(blob, appState.fileName + "_edited.wav");
       appState.isLoading = false;
     } catch (err) {
       appState.isLoading = false;
-      alert('Processing error: ' + (err as Error).message);
+      alert("Processing error: " + (err as Error).message);
       console.error(err);
     }
   }
@@ -123,7 +127,9 @@
       const wrapper = spectrogramWrapperEl;
       const oldWidth = wrapper.clientWidth;
       const oldTotal = oldWidth * appState.zoomLevel;
-      const centerFrac = oldTotal ? (wrapper.scrollLeft + oldWidth / 2) / oldTotal : 0.5;
+      const centerFrac = oldTotal
+        ? (wrapper.scrollLeft + oldWidth / 2) / oldTotal
+        : 0.5;
 
       if (resizeTimer !== null) clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
@@ -138,35 +144,38 @@
     };
 
     const handleKeydown = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
+      if (e.code === "Space") {
         e.preventDefault();
         Playback.toggle();
       }
       if (!appState.audioBuffer) return;
       const NUDGE = 0.005;
-      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+      if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
         if (appState.isPlaying) return;
-        const dir = e.code === 'ArrowRight' ? 1 : -1;
-        appState.markerPos = Math.max(0, Math.min(1, appState.markerPos + dir * NUDGE));
+        const dir = e.code === "ArrowRight" ? 1 : -1;
+        appState.markerPos = Math.max(
+          0,
+          Math.min(1, appState.markerPos + dir * NUDGE),
+        );
         Playback.updateMarker();
         Playback.updateTimeDisplay();
       }
-      if (e.code === 'ArrowUp') {
+      if (e.code === "ArrowUp") {
         e.preventDefault();
         zoomIn();
       }
-      if (e.code === 'ArrowDown') {
+      if (e.code === "ArrowDown") {
         e.preventDefault();
         zoomOut();
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    document.addEventListener('keydown', handleKeydown);
+    window.addEventListener("resize", handleResize);
+    document.addEventListener("keydown", handleKeydown);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
-      document.removeEventListener('keydown', handleKeydown);
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("keydown", handleKeydown);
     };
   });
 </script>
@@ -186,7 +195,7 @@
 
 {#if !fileLoaded}
   <div class="splash">
-    <Peep2  />
+    <Peep2 />
     <p>A web application to simplify audio editing for upload to eBird</p>
     <label for="fileInput" class="file-button">Open WAV File</label>
   </div>
@@ -194,14 +203,18 @@
 
 {#if fileLoaded}
   <div class="container">
-      <header>
-          <Peep2 size={5}/>
+    <header>
+      <Peep2 size={4} />
 
-        <div class="file-section">
-        <label for="fileInput" class="file-button header-button" title="Upload new file"><FileHeadphone /></label>
-        </div>
-      </header>
-        <div class="file-info">{appState.fileInfoText}</div>
+      <div class="file-section">
+        <label
+          for="fileInput"
+          class="file-button header-button"
+          title="Upload new file"><FileHeadphone /></label
+        >
+      </div>
+    </header>
+    <div class="file-info">{appState.fileInfoText}</div>
     <div class="spectrogram-section">
       <SpectrogramComponent bind:wrapperEl={spectrogramWrapperEl} />
       <div class="playback-controls-container">
