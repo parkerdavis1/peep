@@ -356,7 +356,7 @@
     </div>
   </div>
 </div>
-<div class="time-bar">
+<!-- <div class="time-bar">
   <span>{appState.timeStartText}</span>
   <span>{appState.timeEndText}</span>
-</div>
+</div> -->

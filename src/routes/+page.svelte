@@ -147,9 +147,10 @@
         >
       </div>
     </header>
-    <div class="file-info">{appState.fileInfoText}</div>
     <div class="spectrogram-section">
       <SpectrogramComponent />
+      <div class="file-info">{appState.fileInfoText}</div>
+
       <div class="playback-controls-container">
         <div class="zoom-controls">
           <button class="zoom-btn" onclick={zoomOut}>&minus;</button>
