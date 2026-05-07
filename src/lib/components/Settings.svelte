@@ -1,10 +1,22 @@
 <script lang="ts">
   import { appState } from "$lib/state.svelte.ts";
 
+  const HP_FREQ_DEFAULT = 100;
+  const FADE_DURATION_DEFAULT = 1.0;
+
   function handleHpFreqInput() {
     if (appState.filterNode) {
       appState.filterNode.frequency.value = appState.hpFreq;
     }
+  }
+
+  function resetHpFreq() {
+    appState.hpFreq = HP_FREQ_DEFAULT;
+    handleHpFreqInput();
+  }
+
+  function resetFadeDuration() {
+    appState.fadeDuration = FADE_DURATION_DEFAULT;
   }
 </script>
 
@@ -20,6 +32,7 @@
         step="10"
         bind:value={appState.hpFreq}
         oninput={handleHpFreqInput}
+        ondblclick={resetHpFreq}
       />
       <span class="setting-value">{appState.hpFreq} Hz</span>
       <input type="checkbox" id="hpEnabled" bind:checked={appState.hpEnabled} />
@@ -46,6 +59,7 @@
         step="0.5"
         bind:value={appState.fadeDuration}
         disabled={!appState.fadeEnabled}
+        ondblclick={resetFadeDuration}
       />
       <span class="setting-value">{appState.fadeDuration.toFixed(1)} s</span>
       <input

@@ -22,7 +22,7 @@
   }
   --border: #ddd;
   --button-active: #eee;
-  --trim-overlay: rgba(200, 200, 200, 0.55);
+  --trim-overlay: rgba(150, 150, 150, 0.65);
   --handle-color: #d44;
   --cursor-color: #40718f;
   --marker-color: #e67300;
@@ -45,7 +45,7 @@
     --accent-active: #4a718f;
     --border: #444;
     --button-active: #111;
-    --trim-overlay: rgba(50, 50, 50, 0.55);
+    --trim-overlay: rgba(50, 50, 50, 0.65);
     --handle-color: #e44;
     --cursor-color: #6091b3;
     --marker-color: #f67300;
@@ -64,12 +64,6 @@ body {
   line-height: 1.4;
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
-}
-
-h1 {
-  font-family: "Whirly Birdie";
-  /* make variable font narrow*/
-  font-variant: "narrow";
 }
 
 /* ---- Global file input (hidden; triggered by labels) ---- */
