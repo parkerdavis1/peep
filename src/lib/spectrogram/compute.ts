@@ -71,8 +71,8 @@ export function render(canvas: HTMLCanvasElement, canvasWidth: number): void {
   const canvasCtx = canvas.getContext("2d")!;
 
   // Find dB range for color mapping
-  let minDb = 0,
-    maxDb = -200;
+  let minDb = 0;
+  let maxDb = -200;
   for (let i = 0; i < data.length; i++) {
     if (data[i] < minDb) minDb = data[i];
     if (data[i] > maxDb) maxDb = data[i];

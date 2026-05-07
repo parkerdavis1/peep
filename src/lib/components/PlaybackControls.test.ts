@@ -77,6 +77,9 @@ describe("PlaybackControls Component", () => {
 
     // Click play
     playBtn.click();
+    
+    // Wait for async toggle/start to complete
+    await new Promise(r => setTimeout(r, 0));
     await tick();
 
     expect(appState.isPlaying).toBe(true);

@@ -79,12 +79,12 @@ describe("Playback Logic", () => {
     expect(appState.timeDisplayText).toBe("0:00.0 / 0:06.0");
   });
 
-  test("start() initializes audio nodes based on settings", () => {
+  test("start() initializes audio nodes based on settings", async () => {
     appState.hpEnabled = true;
     appState.fadeEnabled = true;
     appState.normalizeEnabled = true;
 
-    start();
+    await start();
 
     expect(appState.isPlaying).toBe(true);
     expect(appState.sourceNode).not.toBeNull();
@@ -93,12 +93,12 @@ describe("Playback Logic", () => {
     expect(appState.normalizeNode).not.toBeNull();
   });
 
-  test("start() respects disabled settings", () => {
+  test("start() respects disabled settings", async () => {
     appState.hpEnabled = false;
     appState.fadeEnabled = false; // Still creates node, but envelope doesn't ramp
     appState.normalizeEnabled = false;
 
-    start();
+    await start();
 
     expect(appState.isPlaying).toBe(true);
     expect(appState.filterNode).toBeNull();
@@ -107,8 +107,8 @@ describe("Playback Logic", () => {
     expect(appState.fadeNode).not.toBeNull();
   });
 
-  test("stop() cleans up nodes and stops playing", () => {
-    start();
+  test("stop() cleans up nodes and stops playing", async () => {
+    await start();
     expect(appState.isPlaying).toBe(true);
 
     const sourceNode = appState.sourceNode;
@@ -120,31 +120,31 @@ describe("Playback Logic", () => {
     expect(appState.sourceNode).toBeNull();
   });
 
-  test("rewind() moves marker to trimStart", () => {
+  test("rewind() moves marker to trimStart", async () => {
     appState.markerPos = 0.5;
-    rewind();
+    await rewind();
     expect(appState.markerPos).toBe(0.2); // trimStart
     expect(appState.isPlaying).toBe(false); // Should stop if not playing
   });
 
-  test("rewind() while playing restarts playback from trimStart", () => {
+  test("rewind() while playing restarts playback from trimStart", async () => {
     appState.isPlaying = true; // Fake state for rewind to detect "wasPlaying"
     // Actually start so we have a context
-    start();
+    await start();
     appState.markerPos = 0.5;
 
-    rewind();
+    await rewind();
 
     expect(appState.markerPos).toBe(0.2); // Resets
     expect(appState.isPlaying).toBe(true); // Restarts
   });
 
-  test("playback does not go beyond trim handles", () => {
+  test("playback does not go beyond trim handles", async () => {
     appState.markerPos = 0.5; // Starts in the middle
     appState.trimStart = 0.2;
     appState.trimEnd = 0.8;
 
-    start();
+    await start();
 
     // sourceNode is set during start()
     const sourceNode = appState.sourceNode as any;
@@ -156,12 +156,12 @@ describe("Playback Logic", () => {
     expect(sourceNode.start).toHaveBeenCalledWith(0, 5, 3);
   });
 
-  test("playback restarts from trimStart if marker is outside trim bounds", () => {
+  test("playback restarts from trimStart if marker is outside trim bounds", async () => {
     // Test marker before trimStart
     appState.trimStart = 0.2;
     appState.trimEnd = 0.8;
     appState.markerPos = 0.1;
-    start();
+    await start();
 
     let sourceNode = appState.sourceNode as any;
     expect(sourceNode.start).toHaveBeenCalledWith(0, 2, 6);
@@ -171,7 +171,7 @@ describe("Playback Logic", () => {
 
     // Test marker exactly at or after trimEnd
     appState.markerPos = 0.85;
-    start();
+    await start();
 
     sourceNode = appState.sourceNode as any;
     expect(sourceNode.start).toHaveBeenCalledWith(0, 2, 6);

@@ -1,5 +1,5 @@
 /**
- * Apply a logarithmic (exponential-amplitude) fade-in and fade-out envelope
+ * Apply a fade-in and fade-out envelope
  * to a GainNode's gain AudioParam.
  *
  * This is the single source of truth for fade shape -- edit fadeDur or SILENCE

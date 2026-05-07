@@ -12,14 +12,17 @@ export function updateMarker(): void {
   );
 }
 
-export function start(): void {
+export async function start(): Promise<void> {
   const buf = appState.audioBuffer;
   if (!buf) return;
 
   stop();
-  appState.ensureAudioCtx();
+  await appState.ensureAudioCtx();
 
   const ctx = appState.audioCtx!;
+  // Guard: if context still isn't running after resume attempt, bail out
+  if (ctx.state !== "running") return;
+
   const dur = buf.duration;
 
   let clampedMarker = appState.markerPos;
@@ -174,23 +177,23 @@ export function stop(savePosition = false): void {
   updateMarker();
 }
 
-export function toggle(): void {
-  appState.ensureAudioCtx();
+export async function toggle(): Promise<void> {
+  await appState.ensureAudioCtx();
   if (appState.isPlaying) {
     stop(true);
   } else {
-    start();
+    await start();
   }
 }
 
-export function rewind(): void {
+export async function rewind(): Promise<void> {
   if (!appState.audioBuffer) return;
   const wasPlaying = appState.isPlaying;
   stop();
   appState.markerPos = appState.trimStart;
   updateMarker();
   if (wasPlaying) {
-    start();
+    await start();
   }
 }
 

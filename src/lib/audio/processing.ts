@@ -4,7 +4,7 @@
  */
 import { appState } from "$lib/state.svelte.ts";
 import { applyFadeEnvelope } from "$lib/audio/fade.ts";
-import { downloadBlob } from "$lib/utils/dom.ts";
+import { downloadBlob } from "$lib/utils/blob.ts";
 
 /**
  * Process the audio: trim, HP filter, fade in/out, normalize.
