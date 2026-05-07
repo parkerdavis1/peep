@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appState } from "$lib/state.svelte.ts";
-  import { toggle, rewind } from "$lib/playback.ts";
+  import { toggle, rewind } from "$lib/audio/playback.ts";
   import { Pause, Play } from "@lucide/svelte";
 </script>
 

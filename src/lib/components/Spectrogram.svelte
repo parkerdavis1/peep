@@ -1,28 +1,100 @@
 <script lang="ts">
   import { appState } from "$lib/state.svelte.ts";
-  import { initSpectrogram, render, updateTimeBar } from "$lib/spectrogram.ts";
-  import {
-    initPlayback,
-    updateMarker,
-    updateTimeDisplay,
-    stop,
-  } from "$lib/playback.ts";
+  import { render, SPEC_H, RULER_H } from "$lib/spectrogram/compute.ts";
+  import { updateMarker, stop } from "$lib/audio/playback.ts";
 
   let {
     wrapperEl = $bindable<HTMLElement | undefined>(undefined),
   }: { wrapperEl?: HTMLElement } = $props();
 
-  // Plain let refs — set by bind:this synchronously during mount, before any $effect runs
   let canvasEl: HTMLCanvasElement;
   let innerEl: HTMLElement;
-  let freqAxisEl: HTMLElement;
-  let timeRulerEl: HTMLElement;
   let handleLeftEl: HTMLElement;
   let handleRightEl: HTMLElement;
-  let playbackCursorEl: HTMLElement;
+
+  let dragging = $state<"left" | "right" | null>(null);
+
+  // Sync scroll left and width to global state for time bar
+  function handleScroll() {
+    if (wrapperEl) {
+      appState.scrollLeftPx = wrapperEl.scrollLeft;
+    }
+  }
+
+  // Automatically sync wrapper width on resize
+  $effect(() => {
+    if (wrapperEl) {
+      const resizeObserver = new ResizeObserver((entries) => {
+        appState.wrapperWidthPx = entries[0].contentRect.width;
+      });
+      resizeObserver.observe(wrapperEl);
+      return () => resizeObserver.disconnect();
+    }
+  });
+
+  // Calculate canvas total width reactively
+  $effect(() => {
+    if (wrapperEl && appState.wrapperWidthPx > 0) {
+      appState.spectrogramTotalWidth =
+        appState.wrapperWidthPx * appState.zoomLevel;
+    }
+  });
+
+  // Re-render canvas when data or zoom changes
+  $effect(() => {
+    if (
+      canvasEl &&
+      appState.spectrogramData &&
+      appState.spectrogramTotalWidth > 0
+    ) {
+      render(canvasEl, appState.spectrogramTotalWidth);
+    }
+  });
+
+  // Auto-scroll cursor when playing
+  $effect(() => {
+    if (appState.isPlaying && wrapperEl) {
+      const cursorPx = appState.playheadFrac * appState.spectrogramTotalWidth;
+      const wrapperWidth = appState.wrapperWidthPx;
+      const scrollLeft = wrapperEl.scrollLeft;
+      if (cursorPx < scrollLeft || cursorPx > scrollLeft + wrapperWidth) {
+        wrapperEl.scrollLeft = cursorPx - wrapperWidth / 3;
+      }
+    }
+  });
+
+  // Keep scroll position centered when zooming
+  let prevZoom = $state(1);
+  $effect(() => {
+    const currentZoom = appState.zoomLevel;
+    if (currentZoom !== prevZoom && wrapperEl && appState.wrapperWidthPx > 0) {
+      const wrapperWidth = appState.wrapperWidthPx;
+      const oldTotal = wrapperWidth * prevZoom;
+      const newTotal = wrapperWidth * currentZoom;
+
+      const centerFrac =
+        oldTotal > 0
+          ? (wrapperEl.scrollLeft + wrapperWidth / 2) / oldTotal
+          : 0.5;
+
+      // Update state for next time
+      prevZoom = currentZoom;
+
+      // Schedule scroll update
+      requestAnimationFrame(() => {
+        if (wrapperEl) {
+          wrapperEl.scrollLeft = centerFrac * newTotal - wrapperWidth / 2;
+          handleScroll(); // ensure state is synced
+        }
+      });
+    }
+  });
 
   let markerLeftPx = $derived(
     appState.markerPos * appState.spectrogramTotalWidth,
+  );
+  let playheadLeftPx = $derived(
+    appState.playheadFrac * appState.spectrogramTotalWidth,
   );
   let trimLeftWidth = $derived(
     appState.trimStart * appState.spectrogramTotalWidth,
@@ -44,53 +116,83 @@
       : 0,
   );
 
-  let dragging = $state<"left" | "right" | null>(null);
+  // Time Ruler Ticks Calculation
+  const TICK_CANDIDATES = [1, 5, 10, 30, 60];
+  const LABEL_CANDIDATES = [1, 5, 10, 15, 30, 60, 120];
+  const MIN_TICK_PX = 3;
+  const MIN_LABEL_PX = 55;
 
-  // Single effect: init (idempotent) + render on data/zoom change.
-  // bind:this has already set all refs by the time this first runs.
-  $effect(() => {
-    if (
-      !canvasEl ||
-      !innerEl ||
-      !wrapperEl ||
-      !timeRulerEl ||
-      !freqAxisEl ||
-      !playbackCursorEl
-    )
-      return;
+  let timeTicks = $derived.by(() => {
+    const buf = appState.audioBuffer;
+    if (!buf || appState.spectrogramTotalWidth <= 0) return [];
 
-    const ctx = canvasEl.getContext("2d")!;
-    initSpectrogram({
-      canvas: canvasEl,
-      canvasCtx: ctx,
-      inner: innerEl,
-      wrapper: wrapperEl,
-      timeRuler: timeRulerEl,
-      freqAxis: freqAxisEl,
-    });
-    initPlayback(playbackCursorEl, wrapperEl, innerEl);
+    const dur = buf.duration;
+    const totalWidth = appState.spectrogramTotalWidth;
+    const pxPerSec = totalWidth / dur;
 
-    const data = appState.spectrogramData;
-    void appState.zoomLevel; // track as reactive dep
+    const tickInterval =
+      TICK_CANDIDATES.find((c) => c * pxPerSec >= MIN_TICK_PX) ??
+      TICK_CANDIDATES[TICK_CANDIDATES.length - 1];
 
-    if (!data) return;
-    render();
-    updateTimeBar();
+    const labelCandidates = LABEL_CANDIDATES.filter(
+      (n) => n % tickInterval === 0,
+    );
+    const labelInterval =
+      labelCandidates.find((c) => c * pxPerSec >= MIN_LABEL_PX) ??
+      labelCandidates[labelCandidates.length - 1] ??
+      tickInterval;
+
+    const numTicks = Math.floor(dur / tickInterval);
+    const ticks = [];
+
+    for (let i = 0; i <= numTicks; i++) {
+      const t = i * tickInterval;
+      const x = (t / dur) * totalWidth;
+      const isLabeled = t % labelInterval === 0;
+
+      let label = "";
+      if (isLabeled) {
+        const totalSec = Math.round(t);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        label = m + ":" + (s < 10 ? "0" : "") + s;
+      }
+
+      ticks.push({ left: Math.round(x), isLabeled, label });
+    }
+    return ticks;
   });
 
-  // Pointer drag handlers
-  function handlePointerMove(e: PointerEvent) {
-    if (!dragging) return;
+  // Freq Axis Calculation
+  const MAX_FREQ = 10000;
+  let freqTicks = $derived.by(() => {
+    const buf = appState.audioBuffer;
+    if (!buf) return [];
 
-    // In vitest getBoundingClientRect on elements sometimes returns all 0s,
-    // so we handle it more robustly.
+    const maxFreq = Math.min(MAX_FREQ, buf.sampleRate / 2);
+    const ticksArr = [
+      1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
+    ];
+
+    return ticksArr
+      .filter((freq) => freq <= maxFreq)
+      .map((freq) => ({
+        top: RULER_H + (1 - freq / maxFreq) * SPEC_H,
+        label: freq / 1000 + "k",
+      }));
+  });
+
+  function handlePointerMove(e: PointerEvent) {
+    if (!dragging || !innerEl) return;
+
     const rect = innerEl.getBoundingClientRect();
     const innerLeft = rect.left;
     const totalWidth =
-      appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
+      appState.spectrogramTotalWidth || appState.wrapperWidthPx || 1;
 
     const frac = Math.max(0, Math.min(1, (e.clientX - innerLeft) / totalWidth));
     const MIN_GAP = 0.005;
+
     if (dragging === "left") {
       appState.trimStart = Math.min(frac, appState.trimEnd - MIN_GAP);
     } else {
@@ -106,7 +208,6 @@
         appState.markerPos = appState.trimEnd;
       }
       updateMarker();
-      updateTimeDisplay();
     }
     dragging = null;
   }
@@ -132,13 +233,11 @@
     if (!appState.audioBuffer) return;
     if ((e.target as HTMLElement).classList.contains("trim-handle")) return;
 
-    // Ignore keyboard-triggered clicks (which have clientX=0, clientY=0 and detail=0)
-    // as we handle Space explicitly for playback.
     if (e.clientX === 0 && e.clientY === 0 && e.detail === 0) return;
     if (typeof e.clientX !== "number") return;
 
     const totalWidth =
-      appState.spectrogramTotalWidth || wrapperEl?.clientWidth || 1;
+      appState.spectrogramTotalWidth || appState.wrapperWidthPx || 1;
     const rect = innerEl.getBoundingClientRect();
     const rawFrac = (e.clientX - rect.left) / totalWidth;
 
@@ -148,20 +247,7 @@
         Math.min(appState.trimEnd, rawFrac),
       );
       updateMarker();
-      updateTimeDisplay();
     }
-  }
-
-  function handleInnerKeydown(e: KeyboardEvent) {
-    if (e.key === "Enter" || e.key === " ") {
-      // Space is handled globally for Play/Pause.
-      // Keyboard events don't have coordinates, so we don't move the marker.
-      e.preventDefault();
-    }
-  }
-
-  function handleScroll() {
-    updateTimeBar();
   }
 </script>
 
@@ -171,22 +257,43 @@
 />
 
 <div class="spectrogram-wrapper">
-  <div class="freq-axis" bind:this={freqAxisEl}></div>
+  <div class="freq-axis">
+    {#each freqTicks as tick}
+      <div class="freq-label" style:top="{tick.top}px">{tick.label}</div>
+    {/each}
+  </div>
+
   <div
     class="spectrogram-scroll-wrap"
     bind:this={wrapperEl}
     onscroll={handleScroll}
   >
-    <div class="time-ruler" bind:this={timeRulerEl}></div>
+    <div class="time-ruler" style:width="{appState.spectrogramTotalWidth}px">
+      {#each timeTicks as tick}
+        <div
+          class="time-tick {tick.isLabeled ? 'major' : ''}"
+          style:left="{tick.left}px"
+        >
+          {#if tick.isLabeled}
+            <span>{tick.label}</span>
+          {/if}
+        </div>
+      {/each}
+    </div>
+
     <div
       class="spectrogram-inner"
       bind:this={innerEl}
+      style:width="{appState.spectrogramTotalWidth}px"
       role="button"
       tabindex="0"
       onclick={handleInnerClick}
-      onkeydown={handleInnerKeydown}
+      onkeydown={(e) => {
+        if (e.key === "Enter") handleInnerClick(e as any);
+      }}
     >
       <canvas bind:this={canvasEl}></canvas>
+
       <div class="trim-overlay-left" style:width="{trimLeftWidth}px"></div>
       <div class="trim-overlay-right" style:width="{trimRightWidth}px"></div>
 
@@ -230,15 +337,21 @@
         style:left="{handleRightLeft}px"
         onpointerdown={handlePointerDownRight}
       ></div>
+
+      <!-- Static Marker (visible when stopped) -->
       <div
         class="playback-marker"
         style:left="{markerLeftPx}px"
-        style:display={appState.audioBuffer ? "block" : "none"}
+        style:display={appState.audioBuffer && !appState.isPlaying
+          ? "block"
+          : "none"}
       ></div>
+
+      <!-- Moving Cursor (visible when playing) -->
       <div
         class="playback-cursor"
-        bind:this={playbackCursorEl}
-        style:display="none"
+        style:left="{playheadLeftPx}px"
+        style:display={appState.isPlaying ? "block" : "none"}
       ></div>
     </div>
   </div>

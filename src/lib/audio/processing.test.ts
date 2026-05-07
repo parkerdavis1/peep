@@ -1,7 +1,8 @@
 import { expect, test, describe, beforeEach, vi } from "vitest";
 import { process, encodeWAV } from "./processing";
-import { formatTime, applyFadeEnvelope } from "./utils";
-import { appState } from "./state.svelte";
+import { formatTime } from "$lib/utils/format.ts";
+import { applyFadeEnvelope } from "$lib/audio/fade.ts";
+import { appState } from "$lib/state.svelte.ts";
 
 describe("Audio Utilities", () => {
   test("formatTime formats seconds properly", () => {

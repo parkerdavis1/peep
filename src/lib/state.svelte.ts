@@ -1,8 +1,9 @@
+import { formatTime } from "$lib/utils/format.ts";
+
 /**
  * Shared reactive application state (Svelte 5 runes).
  * All components and lib modules read/write from this single object.
  */
-
 class AppState {
   // Audio
   audioCtx: AudioContext | null = null;
@@ -19,15 +20,9 @@ class AppState {
   playStartTime = 0;
   playOffset = 0;
   animFrameId: number | null = null;
+
+  // Track playback time directly to drive reactivity
   playbackSec = $state(0);
-  playheadFrac = $derived.by(() => {
-    if (!this.audioBuffer || this.audioBuffer.duration <= 0)
-      return this.markerPos;
-    return Math.max(
-      0,
-      Math.min(1, this.playbackSec / this.audioBuffer.duration),
-    );
-  });
 
   // Trim (fractions 0–1 of total duration)
   trimStart = $state(0);
@@ -44,7 +39,6 @@ class AppState {
   spectrogramData = $state.raw<Float32Array | null>(null);
   spectrogramCols = 0;
   spectrogramRows = 0;
-  // Total pixel width of the rendered spectrogram (set by render())
   spectrogramTotalWidth = $state(0);
 
   // Settings
@@ -57,9 +51,47 @@ class AppState {
   // UI
   isLoading = $state(false);
   loadingText = $state("Processing...");
-  timeDisplayText = $state("0:00.0 / 0:00.0");
-  timeStartText = $state("0:00.0");
-  timeEndText = $state("0:00.0");
+
+  // Scroll tracking for UI derived state
+  scrollLeftPx = $state(0);
+  wrapperWidthPx = $state(0);
+
+  // Derived state for UI
+  timeDisplayText = $derived.by(() => {
+    if (!this.audioBuffer) return "0:00.0 / 0:00.0";
+    const dur = this.audioBuffer.duration;
+
+    // When playing, use the high-precision playbackSec, otherwise use the marker
+    const sec = this.isPlaying ? this.playbackSec : this.markerPos * dur;
+    const regionStart = this.trimStart * dur;
+    const regionDur = this.trimEnd * dur - regionStart;
+
+    return formatTime(sec - regionStart) + " / " + formatTime(regionDur);
+  });
+
+  timeStartText = $derived.by(() => {
+    if (!this.audioBuffer || this.spectrogramTotalWidth === 0) return "0:00.0";
+    const dur = this.audioBuffer.duration;
+    return formatTime((this.scrollLeftPx / this.spectrogramTotalWidth) * dur);
+  });
+
+  timeEndText = $derived.by(() => {
+    if (!this.audioBuffer || this.spectrogramTotalWidth === 0) return "0:00.0";
+    const dur = this.audioBuffer.duration;
+    return formatTime(
+      ((this.scrollLeftPx + this.wrapperWidthPx) / this.spectrogramTotalWidth) *
+        dur,
+    );
+  });
+
+  playheadFrac = $derived.by(() => {
+    if (!this.audioBuffer || this.audioBuffer.duration <= 0)
+      return this.markerPos;
+    return Math.max(
+      0,
+      Math.min(1, this.playbackSec / this.audioBuffer.duration),
+    );
+  });
 
   /**
    * Ensure AudioContext exists and is running.

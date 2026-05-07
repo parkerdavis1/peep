@@ -55,6 +55,11 @@ describe("PlaybackControls Component", () => {
   });
 
   test("renders time display from state", () => {
+    // Set properties for the derived state
+    appState.trimStart = 0;
+    appState.trimEnd = 1;
+    appState.markerPos = 0;
+
     component = mount(PlaybackControls, { target });
     const timeDisplay = target.querySelector(".time-display") as HTMLElement;
     expect(timeDisplay.textContent).toBe("0:00.0 / 0:10.0");

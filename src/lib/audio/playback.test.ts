@@ -1,12 +1,6 @@
 import { expect, test, describe, beforeEach, afterEach, vi } from "vitest";
-import {
-  updateMarker,
-  updateTimeDisplay,
-  start,
-  stop,
-  rewind,
-} from "./playback";
-import { appState } from "./state.svelte";
+import { updateMarker, start, stop, rewind } from "./playback";
+import { appState } from "$lib/state.svelte.ts";
 
 describe("Playback Logic", () => {
   beforeEach(() => {
@@ -73,16 +67,15 @@ describe("Playback Logic", () => {
     expect(appState.markerPos).toBe(0.5);
   });
 
-  test("updateTimeDisplay calculates correctly based on trim region", () => {
+  test("timeDisplayText calculates correctly based on trim region", () => {
     // Region is 2s to 8s (6s duration)
     // Marker is at 0.5 (5s absolute)
-    updateTimeDisplay();
 
     // Offset is 5s - 2s = 3s. Duration is 6s.
     expect(appState.timeDisplayText).toBe("0:03.0 / 0:06.0");
 
     // Update explicitly
-    updateTimeDisplay(2.0); // Exact start of trim
+    appState.markerPos = 0.2; // Exact start of trim
     expect(appState.timeDisplayText).toBe("0:00.0 / 0:06.0");
   });
 

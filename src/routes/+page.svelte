@@ -1,17 +1,14 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { appState } from "$lib/state.svelte.ts";
-  import * as Playback from "$lib/playback.ts";
-  import * as SpectrogramLib from "$lib/spectrogram.ts";
-  import * as Processing from "$lib/processing.ts";
+  import * as Playback from "$lib/audio/playback.ts";
+  import * as SpectrogramLib from "$lib/spectrogram/compute.ts";
+  import * as Processing from "$lib/audio/processing.ts";
   import SpectrogramComponent from "$lib/components/Spectrogram.svelte";
   import PlaybackControls from "$lib/components/PlaybackControls.svelte";
   import Settings from "$lib/components/Settings.svelte";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { FileHeadphone } from "@lucide/svelte";
   import Peep2 from "$lib/components/Peep2.svelte";
-
-  let spectrogramWrapperEl: HTMLElement | undefined = $state();
 
   const title = "Peep";
 
@@ -47,7 +44,6 @@
 
       SpectrogramLib.compute();
       Playback.updateMarker();
-      Playback.updateTimeDisplay();
       appState.isLoading = false;
     } catch (err) {
       appState.isLoading = false;
@@ -60,43 +56,12 @@
     if (!appState.audioBuffer) return;
     if (appState.zoomLevel >= appState.MAX_ZOOM) return;
     appState.zoomLevel = Math.min(appState.zoomLevel * 2, appState.MAX_ZOOM);
-    applyZoom();
   }
 
   function zoomOut(): void {
     if (!appState.audioBuffer) return;
     if (appState.zoomLevel <= 1) return;
     appState.zoomLevel = Math.max(appState.zoomLevel / 2, 1);
-    applyZoom();
-  }
-
-  function applyZoom(): void {
-    if (!spectrogramWrapperEl) return;
-    const wrapper = spectrogramWrapperEl;
-    const wrapperWidth = wrapper.clientWidth;
-    const buf = appState.audioBuffer;
-    if (!buf) return;
-
-    const playheadFrac =
-      appState.isPlaying && appState.audioCtx
-        ? Math.max(
-            0,
-            Math.min(
-              1,
-              (appState.playOffset +
-                (appState.audioCtx.currentTime - appState.playStartTime)) /
-                buf.duration,
-            ),
-          )
-        : appState.markerPos;
-
-    // rAF fires after Svelte's microtask flush (which calls render() via $effect),
-    // so spectrogramTotalWidth is up-to-date by the time we correct scroll
-    requestAnimationFrame(() => {
-      const newTotal = wrapperWidth * appState.zoomLevel;
-      wrapper.scrollLeft = playheadFrac * newTotal - wrapperWidth / 2;
-      SpectrogramLib.updateTimeBar();
-    });
   }
 
   async function handleSave(): Promise<void> {
@@ -119,70 +84,38 @@
     }
   }
 
-  onMount(() => {
-    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
-
-    const handleResize = () => {
-      if (!appState.audioBuffer || !spectrogramWrapperEl) return;
-      const wrapper = spectrogramWrapperEl;
-      const oldWidth = wrapper.clientWidth;
-      const oldTotal = oldWidth * appState.zoomLevel;
-      const centerFrac = oldTotal
-        ? (wrapper.scrollLeft + oldWidth / 2) / oldTotal
-        : 0.5;
-
-      if (resizeTimer !== null) clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        SpectrogramLib.render();
-        Playback.updateMarker();
-        const newWidth = wrapper.clientWidth;
-        const newTotal = newWidth * appState.zoomLevel;
-        wrapper.scrollLeft = centerFrac * newTotal - newWidth / 2;
-        SpectrogramLib.updateTimeBar();
-        resizeTimer = null;
-      }, 150);
-    };
-
-    const handleKeydown = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        Playback.toggle();
-      }
-      if (!appState.audioBuffer) return;
-      const NUDGE = 0.005;
-      if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
-        if (appState.isPlaying) return;
-        const dir = e.code === "ArrowRight" ? 1 : -1;
-        appState.markerPos = Math.max(
-          0,
-          Math.min(1, appState.markerPos + dir * NUDGE),
-        );
-        Playback.updateMarker();
-        Playback.updateTimeDisplay();
-      }
-      if (e.code === "ArrowUp") {
-        e.preventDefault();
-        zoomIn();
-      }
-      if (e.code === "ArrowDown") {
-        e.preventDefault();
-        zoomOut();
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    document.addEventListener("keydown", handleKeydown);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      document.removeEventListener("keydown", handleKeydown);
-    };
-  });
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.code === "Space") {
+      e.preventDefault();
+      Playback.toggle();
+    }
+    if (!appState.audioBuffer) return;
+    const NUDGE = 0.005;
+    if (e.code === "ArrowLeft" || e.code === "ArrowRight") {
+      if (appState.isPlaying) return;
+      const dir = e.code === "ArrowRight" ? 1 : -1;
+      appState.markerPos = Math.max(
+        0,
+        Math.min(1, appState.markerPos + dir * NUDGE),
+      );
+      Playback.updateMarker();
+    }
+    if (e.code === "ArrowUp") {
+      e.preventDefault();
+      zoomIn();
+    }
+    if (e.code === "ArrowDown") {
+      e.preventDefault();
+      zoomOut();
+    }
+  };
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
+
+<svelte:document onkeydown={handleKeydown} />
 
 <!-- Hidden file input, triggered by labels in both splash and editor -->
 <input
@@ -216,7 +149,7 @@
     </header>
     <div class="file-info">{appState.fileInfoText}</div>
     <div class="spectrogram-section">
-      <SpectrogramComponent bind:wrapperEl={spectrogramWrapperEl} />
+      <SpectrogramComponent />
       <div class="playback-controls-container">
         <div class="zoom-controls">
           <button class="zoom-btn" onclick={zoomOut}>&minus;</button>

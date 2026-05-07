@@ -3,7 +3,8 @@
  * Reads settings from appState instead of DOM inputs.
  */
 import { appState } from "$lib/state.svelte.ts";
-import { applyFadeEnvelope } from "$lib/utils.ts";
+import { applyFadeEnvelope } from "$lib/audio/fade.ts";
+import { downloadBlob } from "$lib/utils/dom.ts";
 
 /**
  * Process the audio: trim, HP filter, fade in/out, normalize.
@@ -150,18 +151,4 @@ export function encodeWAV(buffer: AudioBuffer): Blob {
   return new Blob([arrayBuf], { type: "audio/wav" });
 }
 
-/**
- * Trigger a file download from a Blob.
- */
-export function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
-}
+export { downloadBlob };

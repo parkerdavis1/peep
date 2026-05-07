@@ -1,29 +1,8 @@
-/**
- * Audio playback with live HP filter preview and marker support.
- * DOM refs (cursor, wrapper, inner) are set once via initPlayback().
- * Settings are read from appState instead of DOM inputs.
- */
 import { appState } from "$lib/state.svelte.ts";
-import { formatTime, applyFadeEnvelope } from "$lib/utils.ts";
-
-// Module-level DOM refs (set from Spectrogram.svelte onMount)
-let _cursor: HTMLElement | null = null;
-let _wrapper: HTMLElement | null = null;
-let _inner: HTMLElement | null = null;
-
-export function initPlayback(
-  cursor: HTMLElement,
-  wrapper: HTMLElement,
-  inner: HTMLElement,
-): void {
-  _cursor = cursor;
-  _wrapper = wrapper;
-  _inner = inner;
-}
+import { applyFadeEnvelope } from "$lib/audio/fade.ts";
 
 /**
  * Clamp and update marker position in state.
- * The component derives pixel position from appState.markerPos.
  */
 export function updateMarker(): void {
   if (!appState.audioBuffer) return;
@@ -31,16 +10,6 @@ export function updateMarker(): void {
     appState.trimStart,
     Math.min(appState.trimEnd, appState.markerPos),
   );
-}
-
-export function updateTimeDisplay(currentSec?: number): void {
-  if (!appState.audioBuffer) return;
-  const dur = appState.audioBuffer.duration;
-  const sec = currentSec ?? appState.markerPos * dur;
-  const regionStart = appState.trimStart * dur;
-  const regionDur = appState.trimEnd * dur - regionStart;
-  appState.timeDisplayText =
-    formatTime(sec - regionStart) + " / " + formatTime(regionDur);
 }
 
 export function start(): void {
@@ -135,6 +104,7 @@ export function start(): void {
   appState.playStartTime = ctx.currentTime;
   appState.playOffset = startSec;
   appState.isPlaying = true;
+  appState.playbackSec = startSec;
 
   // Natural end: reset marker to trimStart
   source.onended = () => {
@@ -144,7 +114,6 @@ export function start(): void {
     }
   };
 
-  if (_cursor) _cursor.style.display = "block";
   animate();
 }
 
@@ -169,7 +138,6 @@ export function stop(savePosition = false): void {
   }
 
   appState.isPlaying = false;
-  if (_cursor) _cursor.style.display = "none";
 
   if (appState.animFrameId) {
     cancelAnimationFrame(appState.animFrameId);
@@ -204,7 +172,6 @@ export function stop(savePosition = false): void {
   }
 
   updateMarker();
-  updateTimeDisplay();
 }
 
 export function toggle(): void {
@@ -222,7 +189,6 @@ export function rewind(): void {
   stop();
   appState.markerPos = appState.trimStart;
   updateMarker();
-  updateTimeDisplay();
   if (wasPlaying) {
     start();
   }
@@ -230,43 +196,12 @@ export function rewind(): void {
 
 function animate(): void {
   if (!appState.isPlaying) {
-    if (_cursor) _cursor.style.display = "none";
     return;
   }
 
   const ctx = appState.audioCtx!;
-  const buf = appState.audioBuffer!;
-  const dur = buf.duration;
   const elapsed = ctx.currentTime - appState.playStartTime;
-  const currentSec = appState.playOffset + elapsed;
-  const frac = currentSec / dur;
-
-  // Update cursor position directly on the DOM element (bypasses Svelte reactivity for 60fps perf)
-  if (_cursor) {
-    const totalWidth =
-      appState.spectrogramTotalWidth ||
-      (_inner
-        ? parseFloat(_inner.style.width) || _wrapper?.clientWidth || 0
-        : 0);
-    _cursor.style.left = frac * totalWidth + "px";
-  }
-
-  // Update time display (reactive state — triggers text update)
-  updateTimeDisplay(currentSec);
-
-  // Auto-scroll to keep cursor visible
-  if (_wrapper && _cursor) {
-    const totalWidth =
-      appState.spectrogramTotalWidth ||
-      parseFloat(_inner?.style.width ?? "0") ||
-      _wrapper.clientWidth;
-    const cursorPx = frac * totalWidth;
-    const wrapperWidth = _wrapper.clientWidth;
-    const scrollLeft = _wrapper.scrollLeft;
-    if (cursorPx < scrollLeft || cursorPx > scrollLeft + wrapperWidth) {
-      _wrapper.scrollLeft = cursorPx - wrapperWidth / 3;
-    }
-  }
+  appState.playbackSec = appState.playOffset + elapsed;
 
   appState.animFrameId = requestAnimationFrame(animate);
 }
