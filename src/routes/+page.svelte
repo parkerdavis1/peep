@@ -10,6 +10,7 @@
   import LoadingOverlay from '$lib/components/LoadingOverlay.svelte';
     import { FileHeadphone } from '@lucide/svelte';
     import Peep from '$lib/components/Peep.svelte';
+    import Peep2 from '$lib/components/Peep2.svelte';
 
   let spectrogramWrapperEl: HTMLElement | undefined = $state();
 
@@ -58,31 +59,38 @@
   function zoomIn(): void {
     if (!appState.audioBuffer) return;
     if (appState.zoomLevel >= appState.MAX_ZOOM) return;
-    const old = appState.zoomLevel;
     appState.zoomLevel = Math.min(appState.zoomLevel * 2, appState.MAX_ZOOM);
-    applyZoom(old);
+    applyZoom();
   }
 
   function zoomOut(): void {
     if (!appState.audioBuffer) return;
     if (appState.zoomLevel <= 1) return;
-    const old = appState.zoomLevel;
     appState.zoomLevel = Math.max(appState.zoomLevel / 2, 1);
-    applyZoom(old);
+    applyZoom();
   }
 
-  function applyZoom(oldZoom: number): void {
+  function applyZoom(): void {
     if (!spectrogramWrapperEl) return;
     const wrapper = spectrogramWrapperEl;
     const wrapperWidth = wrapper.clientWidth;
-    const oldTotal = wrapperWidth * oldZoom;
-    const centerFrac = oldTotal ? (wrapper.scrollLeft + wrapperWidth / 2) / oldTotal : 0.5;
+    const playheadFrac =
+      appState.isPlaying && appState.audioCtx
+        ? Math.max(
+            0,
+            Math.min(
+              1,
+              (appState.playOffset + (appState.audioCtx.currentTime - appState.playStartTime)) /
+                buf.duration
+            )
+          )
+        : appState.markerPos;
 
     // rAF fires after Svelte's microtask flush (which calls render() via $effect),
     // so spectrogramTotalWidth is up-to-date by the time we correct scroll
     requestAnimationFrame(() => {
       const newTotal = wrapperWidth * appState.zoomLevel;
-      wrapper.scrollLeft = centerFrac * newTotal - wrapperWidth / 2;
+      wrapper.scrollLeft = playheadFrac * newTotal - wrapperWidth / 2;
       SpectrogramLib.updateTimeBar();
     });
   }
@@ -178,7 +186,7 @@
 
 {#if !fileLoaded}
   <div class="splash">
-    <Peep height={100} width={150} />
+    <Peep2  />
     <p>A web application to simplify audio editing for upload to eBird</p>
     <label for="fileInput" class="file-button">Open WAV File</label>
   </div>
@@ -187,7 +195,7 @@
 {#if fileLoaded}
   <div class="container">
       <header>
-          <Peep height={50} width={75} />
+          <Peep2 size={5}/>
 
         <div class="file-section">
         <label for="fileInput" class="file-button header-button" title="Upload new file"><FileHeadphone /></label>
