@@ -14,7 +14,12 @@
   --text: #222;
   --text-secondary: #666;
   --accent: #40718f;
-  --accent-hover: #315870;
+  --accent-hover: red;
+  --accent-active: #315870;
+  @supports (color: hsl(from white h s l)) {
+    --accent-hover: hsl(from var(--accent) h s calc(l + 5));
+    --accent-active: hsl(from var(--accent) h s calc(l - 5));
+  }
   --border: #ddd;
   --button-active: #eee;
   --trim-overlay: rgba(200, 200, 200, 0.55);
@@ -34,7 +39,7 @@
     --text: #fff;
     --text-secondary: #aaa;
     --accent: #6091b3;
-    --accent-hover: #4a718f;
+    --accent-active: #4a718f;
     --border: #444;
     --button-active: #111;
     --trim-overlay: rgba(50, 50, 50, 0.55);
@@ -59,10 +64,9 @@ body {
 }
 
 h1 {
-  font-size: 18px;
-  font-weight: 600;
-  text-align: center;
-  padding: 8px 0 12px;
+  font-family: "Whirly Birdie";
+  /* make variable font narrow*/
+  font-variant: "narrow";
 }
 
 /* ---- Global file input (hidden; triggered by labels) ---- */
@@ -80,12 +84,6 @@ h1 {
   padding: 24px;
   text-align: center;
 
-  h1 {
-    font-size: 32px;
-    font-weight: 700;
-    padding: 0;
-  }
-
   p {
     font-size: 16px;
     color: var(--text-secondary);
@@ -100,6 +98,14 @@ h1 {
 .container {
   margin: 0 auto;
   padding: 12px;
+}
+
+/* ---- Header ---- */
+header {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  justify-content: space-between;
 }
 
 /* ---- File section ---- */
@@ -120,7 +126,7 @@ h1 {
   transition: background 0.15s;
 
   &:active {
-    background: var(--accent-hover);
+    background: var(--accent-active);
   }
 
   input {
@@ -128,8 +134,22 @@ h1 {
   }
 }
 
+.header-button {
+  padding: unset;
+  display: grid;
+  place-items: center;
+  height: 3rem;
+  width: 3rem;
+  background: var(--surface);
+  color: var(--accent);
+
+  &:hover {
+    color: var(--accent-hover);
+  }
+}
+
 .file-info {
-  margin-top: 6px;
+  text-align: center;
   font-size: 13px;
   color: var(--text-secondary);
 }
@@ -399,7 +419,7 @@ h1 {
   transition: background 0.15s;
 
   &:active {
-    background: var(--accent-hover);
+    background: var(--accent-active);
   }
 }
 

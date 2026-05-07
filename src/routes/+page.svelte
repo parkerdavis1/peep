@@ -8,8 +8,12 @@
   import PlaybackControls from '$lib/components/PlaybackControls.svelte';
   import Settings from '$lib/components/Settings.svelte';
   import LoadingOverlay from '$lib/components/LoadingOverlay.svelte';
+    import { FileHeadphone } from '@lucide/svelte';
+    import Peep from '$lib/components/Peep.svelte';
 
   let spectrogramWrapperEl: HTMLElement | undefined = $state();
+
+  const title = 'Peep'
 
   // Whether a file is loaded and the editor should be shown
   let fileLoaded = $derived(appState.audioBuffer !== null);
@@ -160,7 +164,7 @@
 </script>
 
 <svelte:head>
-  <title>Peep</title>
+  <title>{title}</title>
 </svelte:head>
 
 <!-- Hidden file input, triggered by labels in both splash and editor -->
@@ -174,19 +178,22 @@
 
 {#if !fileLoaded}
   <div class="splash">
-    <h1>Peep</h1>
-    <p>A web application to streamline audio editing for upload to eBird</p>
+    <Peep height={100} width={150} />
+    <p>A web application to simplify audio editing for upload to eBird</p>
     <label for="fileInput" class="file-button">Open WAV File</label>
   </div>
 {/if}
 
 {#if fileLoaded}
   <div class="container">
-    <h1>Peep</h1>
-    <div class="file-section">
-      <label for="fileInput" class="file-button">Open WAV File</label>
-      <div class="file-info">{appState.fileInfoText}</div>
-    </div>
+      <header>
+          <Peep height={50} width={75} />
+
+        <div class="file-section">
+        <label for="fileInput" class="file-button header-button" title="Upload new file"><FileHeadphone /></label>
+        </div>
+      </header>
+        <div class="file-info">{appState.fileInfoText}</div>
     <div class="spectrogram-section">
       <SpectrogramComponent bind:wrapperEl={spectrogramWrapperEl} />
       <div class="playback-controls-container">
