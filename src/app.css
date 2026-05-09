@@ -36,6 +36,7 @@
   --width-lg: 800px;
   --border-radius: 8px;
   --spectrogram-height: 200px;
+  --freq-axis-width: 20px;
 
   @media (prefers-color-scheme: dark) {
     --bg: #15202b;
@@ -155,9 +156,12 @@ header {
 }
 
 .file-info {
-  text-align: center;
-  font-size: 13px;
+  font-family: monospace;
+  font-size: 12px;
   color: var(--text-secondary);
+  overflow: hidden;
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* ---- Spectrogram ---- */
@@ -236,7 +240,7 @@ header {
 .freq-axis {
   position: relative;
   flex-shrink: 0;
-  width: 20px;
+  width: var(--freq-axis-width);
   background: var(--surface);
   border-right: 1px solid var(--border);
   pointer-events: none;
@@ -355,6 +359,8 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-left: var(--freq-axis-width);
+  gap: 2rem;
 }
 
 .time-bar {
@@ -457,11 +463,12 @@ header {
 }
 
 .time-display {
+  font-family: monospace;
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
-  text-align: center;
   min-width: 95px;
+  text-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 /* ---- Settings panel ---- */

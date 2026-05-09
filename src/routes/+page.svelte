@@ -25,9 +25,8 @@
     appState.ensureAudioCtx();
     Playback.stop();
     appState.fileName = file.name.replace(/\.wav$/i, "");
-    appState.fileInfoText =
-      file.name + " (" + (file.size / 1024 / 1024).toFixed(1) + " MB)";
-    appState.loadingText = "Decoding audio...";
+    appState.fileInfoText = file.name;
+    appState.loadingText = "Loading audio...";
     appState.isLoading = true;
 
     try {
