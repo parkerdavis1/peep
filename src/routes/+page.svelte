@@ -129,7 +129,7 @@
 {#if !fileLoaded}
   <div class="splash">
     <Peep2 />
-    <p>A web application to simplify audio editing for upload to eBird</p>
+    <p class="sub-title">A web app to simplify audio editing for eBird</p>
     <label for="fileInput" class="file-button">Open WAV File</label>
   </div>
 {/if}
