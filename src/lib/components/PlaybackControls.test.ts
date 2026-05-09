@@ -11,7 +11,6 @@ describe("PlaybackControls Component", () => {
   beforeEach(() => {
     // Mock necessary state
     appState.isPlaying = false;
-    appState.timeDisplayText = "0:00.0 / 0:10.0";
     appState.trimStart = 0.2;
     appState.markerPos = 0.5;
 
@@ -54,17 +53,6 @@ describe("PlaybackControls Component", () => {
     vi.restoreAllMocks();
   });
 
-  test("renders time display from state", () => {
-    // Set properties for the derived state
-    appState.trimStart = 0;
-    appState.trimEnd = 1;
-    appState.markerPos = 0;
-
-    component = mount(PlaybackControls, { target });
-    const timeDisplay = target.querySelector(".time-display") as HTMLElement;
-    expect(timeDisplay.textContent).toBe("0:00.0 / 0:10.0");
-  });
-
   test("clicking play button toggles playback state", async () => {
     component = mount(PlaybackControls, { target });
     const playBtn = target.querySelector(".play-btn") as HTMLButtonElement;
@@ -77,9 +65,9 @@ describe("PlaybackControls Component", () => {
 
     // Click play
     playBtn.click();
-    
+
     // Wait for async toggle/start to complete
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
     await tick();
 
     expect(appState.isPlaying).toBe(true);

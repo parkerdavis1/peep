@@ -110,8 +110,17 @@ class AppState {
         ).webkitAudioContext!;
       this.audioCtx = new AudioCtx();
     }
-    if (this.audioCtx.state === "suspended") {
-      await this.audioCtx.resume();
+    // Always attempt to resume as a fix for iOS Safari zombie AudioContexts
+    // (where state is "running" but currentTime is frozen)
+    if (
+      this.audioCtx.state === "suspended" ||
+      this.audioCtx.state === "running"
+    ) {
+      try {
+        await this.audioCtx.resume();
+      } catch (err) {
+        console.warn("Could not resume AudioContext:", err);
+      }
     }
   }
 }

@@ -173,6 +173,22 @@ describe("Application Flow", () => {
     expect(appState.isLoading).toBe(false);
   });
 
+  test("renders time display from state", async () => {
+    appState.trimStart = 0;
+    appState.trimEnd = 1;
+    appState.markerPos = 0;
+    appState.audioBuffer = new AudioBuffer({
+      length: 44100 * 5,
+      sampleRate: 44100,
+    });
+
+    component = mount(Page, { target });
+    await tick();
+
+    const timeDisplay = target.querySelector(".time-display") as HTMLElement;
+    expect(timeDisplay.textContent).toBe("0:00.0 / 0:05.0");
+  });
+
   test("handles keyboard shortcuts", async () => {
     component = mount(Page, { target });
     appState.audioBuffer = new AudioBuffer({

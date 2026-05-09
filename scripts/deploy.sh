@@ -4,8 +4,8 @@ ssh-add -t 120s
 
 pnpm build
 
-echo "copying files to droplet..."
+echo "\ncopying files to droplet..."
 
 rsync -a dist/ droplet:~/static/peep
 
-echo "✨ Deployment complete!"
+echo "\n✨ Deployment complete!\n"
