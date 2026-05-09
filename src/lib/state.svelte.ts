@@ -66,7 +66,9 @@ class AppState {
     const regionStart = this.trimStart * dur;
     const regionDur = this.trimEnd * dur - regionStart;
 
-    return formatTime(sec - regionStart) + " / " + formatTime(regionDur);
+    return (
+      formatTime(Math.max(0, sec - regionStart)) + " / " + formatTime(regionDur)
+    );
   });
 
   timeStartText = $derived.by(() => {

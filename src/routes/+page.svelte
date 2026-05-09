@@ -142,7 +142,7 @@
         <label
           for="fileInput"
           class="file-button header-button"
-          title="Upload new file"><FileHeadphone /></label
+          title="Load new file"><FileHeadphone /></label
         >
       </div>
     </header>
