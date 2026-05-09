@@ -149,15 +149,19 @@
     </header>
     <div class="spectrogram-section">
       <SpectrogramComponent />
-      <div class="file-info">{appState.fileInfoText}</div>
+      <div class="below-spectrogram">
+        <div class="time-display">{appState.timeDisplayText}</div>
+
+        <div class="file-info">{appState.fileInfoText}</div>
+      </div>
 
       <div class="playback-controls-container">
+        <PlaybackControls />
         <div class="zoom-controls">
           <button class="zoom-btn" onclick={zoomOut}>&minus;</button>
           <span class="zoom-level">{appState.zoomLevel}x</span>
           <button class="zoom-btn" onclick={zoomIn}>+</button>
         </div>
-        <PlaybackControls />
       </div>
       <Settings />
       <div class="save-section">

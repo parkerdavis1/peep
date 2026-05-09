@@ -13,5 +13,4 @@
   >
     {#if appState.isPlaying}<Pause />{:else}<Play />{/if}
   </button>
-  <div class="time-display">{appState.timeDisplayText}</div>
 </div>

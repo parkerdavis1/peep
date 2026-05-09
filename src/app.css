@@ -351,6 +351,12 @@ header {
 }
 
 /* ---- Time bar ---- */
+.below-spectrogram {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .time-bar {
   display: flex;
   justify-content: space-between;
