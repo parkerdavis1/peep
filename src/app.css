@@ -35,6 +35,7 @@
   --width-m: 500px;
   --width-lg: 800px;
   --border-radius: 8px;
+  --spectrogram-height: 200px;
 
   @media (prefers-color-scheme: dark) {
     --bg: #15202b;
@@ -186,7 +187,7 @@ header {
 
 .spectrogram-inner {
   position: relative;
-  height: 200px;
+  height: var(--spectrogram-height);
   min-width: 100%;
   overflow: hidden;
 }
@@ -227,7 +228,7 @@ header {
 
 .spectrogram-inner canvas {
   display: block;
-  height: 200px;
+  height: var(--spectrogram-height);
   image-rendering: pixelated;
 }
 
@@ -310,7 +311,7 @@ header {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 44px;
-    height: 44px;
+    height: var(--spectrogram-height);
   }
 
   &::after {
