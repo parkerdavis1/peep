@@ -31,11 +31,7 @@ describe("Application Flow", () => {
       state = "running";
       currentTime = 0;
       resume = vi.fn();
-      decodeAudioData = vi
-        .fn()
-        .mockResolvedValue(
-          new AudioBuffer({ length: 44100, sampleRate: 44100 }),
-        );
+      addEventListener = vi.fn();
       createBufferSource = vi.fn().mockReturnValue({
         connect: vi.fn(),
         start: vi.fn(),

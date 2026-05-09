@@ -1,6 +1,9 @@
 import { appState } from "$lib/state.svelte.ts";
 import { applyFadeEnvelope } from "$lib/audio/fade.ts";
 
+let lastAnimRealTime = 0;
+let lastAnimCtxTime = 0;
+
 /**
  * Clamp and update marker position in state.
  */
@@ -109,6 +112,18 @@ export async function start(): Promise<void> {
   appState.isPlaying = true;
   appState.playbackSec = startSec;
 
+  if (!(ctx as any)._hasStateChangeListener) {
+    ctx.addEventListener("statechange", () => {
+      if (ctx.state !== "running" && appState.isPlaying) {
+        stop(true);
+      }
+    });
+    (ctx as any)._hasStateChangeListener = true;
+  }
+
+  lastAnimRealTime = performance.now();
+  lastAnimCtxTime = ctx.currentTime;
+
   // Natural end: reset marker to trimStart
   source.onended = () => {
     if (appState.sourceNode === source) {
@@ -197,12 +212,27 @@ export async function rewind(): Promise<void> {
   }
 }
 
-function animate(): void {
+function animate(time?: number): void {
   if (!appState.isPlaying) {
     return;
   }
 
   const ctx = appState.audioCtx!;
+  const now = time ?? performance.now();
+
+  if (lastAnimRealTime !== 0) {
+    const realDiff = (now - lastAnimRealTime) / 1000;
+    const ctxDiff = ctx.currentTime - lastAnimCtxTime;
+    // If >500ms real time passed but audio time is completely frozen, it's suspended
+    if (realDiff > 0.5 && ctxDiff === 0) {
+      stop(true);
+      return;
+    }
+  }
+
+  lastAnimRealTime = now;
+  lastAnimCtxTime = ctx.currentTime;
+
   const elapsed = ctx.currentTime - appState.playStartTime;
   appState.playbackSec = appState.playOffset + elapsed;
 

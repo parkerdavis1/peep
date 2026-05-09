@@ -25,6 +25,7 @@ describe("PlaybackControls Component", () => {
       state: "running",
       currentTime: 0,
       resume: vi.fn(),
+      addEventListener: vi.fn(),
       createBufferSource: vi.fn().mockReturnValue({
         connect: vi.fn(),
         start: vi.fn(),

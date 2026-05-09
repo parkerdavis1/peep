@@ -108,31 +108,13 @@
       zoomOut();
     }
   };
-  const handleVisibilityChange = () => {
-    // Only apply this logic on mobile devices where OS aggressively suspends background audio.
-    const isMobile =
-      /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-
-    if (document.hidden && isMobile) {
-      if (appState.isPlaying) {
-        Playback.stop(true); // Save position and update the play button to 'paused'
-      }
-      if (appState.audioCtx && appState.audioCtx.state === "running") {
-        appState.audioCtx.suspend().catch(console.warn);
-      }
-    }
-  };
 </script>
 
 <svelte:head>
   <title>{title}</title>
 </svelte:head>
 
-<svelte:document
-  onkeydown={handleKeydown}
-  onvisibilitychange={handleVisibilityChange}
-/>
+<svelte:document onkeydown={handleKeydown} />
 
 <!-- Hidden file input, triggered by labels in both splash and editor -->
 <input

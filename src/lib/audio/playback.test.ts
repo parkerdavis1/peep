@@ -9,6 +9,16 @@ describe("Playback Logic", () => {
       state = "running";
       currentTime = 0;
       resume = vi.fn();
+      listeners: Record<string, Function[]> = {};
+      addEventListener = vi.fn((event, cb) => {
+        if (!this.listeners[event]) this.listeners[event] = [];
+        this.listeners[event].push(cb);
+      });
+      dispatchEvent = (event: string) => {
+        if (this.listeners[event]) {
+          this.listeners[event].forEach((cb) => cb());
+        }
+      };
       createBufferSource = vi.fn().mockReturnValue({
         connect: vi.fn(),
         start: vi.fn(),
@@ -176,5 +186,51 @@ describe("Playback Logic", () => {
     sourceNode = appState.sourceNode as any;
     expect(sourceNode.start).toHaveBeenCalledWith(0, 2, 6);
     expect(appState.markerPos).toBe(0.2);
+  });
+
+  test("stop(true) is called if AudioContext state changes to interrupted while playing", async () => {
+    await start();
+    expect(appState.isPlaying).toBe(true);
+
+    const ctx = appState.audioCtx as any;
+    ctx.state = "interrupted";
+    ctx.dispatchEvent("statechange");
+
+    expect(appState.isPlaying).toBe(false);
+  });
+
+  test("zombie detector stops playback if real time advances but audio time is frozen", async () => {
+    vi.useFakeTimers();
+    
+    // Mock performance.now to control real time
+    let perfTime = 1000;
+    vi.spyOn(performance, "now").mockImplementation(() => perfTime);
+
+    // Fake window.requestAnimationFrame
+    let rAFCallback: FrameRequestCallback | null = null;
+    vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+      rAFCallback = cb;
+      return 1;
+    });
+    vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {
+      rAFCallback = null;
+    });
+
+    await start();
+    expect(appState.isPlaying).toBe(true);
+
+    const ctx = appState.audioCtx as any;
+    expect(rAFCallback).not.toBeNull();
+
+    // Advance real time by 600ms, but DO NOT advance ctx.currentTime
+    perfTime += 600;
+    
+    // Call the rAF callback with the new timestamp to simulate the next frame
+    rAFCallback!(perfTime);
+
+    expect(appState.isPlaying).toBe(false);
+
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 });
