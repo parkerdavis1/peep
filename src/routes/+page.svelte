@@ -9,7 +9,7 @@
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { FileHeadphone } from "@lucide/svelte";
   import Peep2 from "$lib/components/Peep2.svelte";
-  import { teardown } from "$lib/audio/playback.ts";
+  import { teardownAudioCtx } from "$lib/audio/playback.ts";
 
   const title = "Peep";
 
@@ -19,7 +19,7 @@
   function handleVisibilityChange() {
     if (document.visibilityState === "hidden") {
       Playback.stop(true);
-      teardown(appState);
+      teardownAudioCtx(appState);
     }
   }
 

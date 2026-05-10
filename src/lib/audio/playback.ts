@@ -226,7 +226,7 @@ function animate(time?: number): void {
     // If >500ms real time passed but audio time is completely frozen, it's suspended
     if (realDiff > 0.5 && ctxDiff === 0) {
       stop(true);
-      teardown(appState);
+      teardownAudioCtx(appState);
       return;
     }
   }
@@ -240,7 +240,7 @@ function animate(time?: number): void {
   appState.animFrameId = requestAnimationFrame(animate);
 }
 
-export function teardown(state: typeof appState): void {
+export function teardownAudioCtx(state: typeof appState): void {
   if (state.audioCtx) {
     try {
       state.audioCtx.close();
