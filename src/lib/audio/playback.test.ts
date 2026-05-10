@@ -201,7 +201,7 @@ describe("Playback Logic", () => {
 
   test("zombie detector stops playback if real time advances but audio time is frozen", async () => {
     vi.useFakeTimers();
-    
+
     // Mock performance.now to control real time
     let perfTime = 1000;
     vi.spyOn(performance, "now").mockImplementation(() => perfTime);
@@ -219,12 +219,11 @@ describe("Playback Logic", () => {
     await start();
     expect(appState.isPlaying).toBe(true);
 
-    const ctx = appState.audioCtx as any;
     expect(rAFCallback).not.toBeNull();
 
     // Advance real time by 600ms, but DO NOT advance ctx.currentTime
     perfTime += 600;
-    
+
     // Call the rAF callback with the new timestamp to simulate the next frame
     rAFCallback!(perfTime);
 
