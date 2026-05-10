@@ -240,7 +240,7 @@ function animate(time?: number): void {
   appState.animFrameId = requestAnimationFrame(animate);
 }
 
-export async function teardown(state: typeof appState): Promise<void> {
+export function teardown(state: typeof appState): void {
   if (state.audioCtx) {
     try {
       state.audioCtx.close();
