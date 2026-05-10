@@ -9,11 +9,19 @@
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { FileHeadphone } from "@lucide/svelte";
   import Peep2 from "$lib/components/Peep2.svelte";
+  import { teardown } from "$lib/audio/playback.ts";
 
   const title = "Peep";
 
   // Whether a file is loaded and the editor should be shown
   let fileLoaded = $derived(appState.audioBuffer !== null);
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === "hidden") {
+      Playback.stop(true);
+      teardown(appState);
+    }
+  }
 
   async function handleFileChange(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
@@ -114,7 +122,10 @@
   <title>{title}</title>
 </svelte:head>
 
-<svelte:document onkeydown={handleKeydown} />
+<svelte:document
+  onkeydown={handleKeydown}
+  onvisibilitychange={handleVisibilityChange}
+/>
 
 <!-- Hidden file input, triggered by labels in both splash and editor -->
 <input

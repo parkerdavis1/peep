@@ -1,12 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["@sveltejs/opencode"],
-  "agent": {
-    "build": {
-      "permission": {
-        "git commit *": "ask",
-        "git push *": "deny"
-      }
+  "permission": {
+    "bash": {
+      "git *": "deny",
+      "rm *": "ask"
     }
   }
 }

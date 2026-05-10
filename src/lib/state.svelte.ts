@@ -100,7 +100,18 @@ class AppState {
    * Must be called from a user gesture on iOS.
    */
   async ensureAudioCtx(): Promise<void> {
-    if (!this.audioCtx || this.audioCtx.state === "closed") {
+    if (
+      !this.audioCtx ||
+      this.audioCtx.state === "closed" ||
+      this.audioCtx.state === "interrupted"
+    ) {
+      if (this.audioCtx) {
+        try {
+          this.audioCtx.close();
+        } catch (err) {
+          // ignore
+        }
+      }
       const AudioCtx =
         window.AudioContext ??
         (
@@ -114,7 +125,8 @@ class AppState {
     // (where state is "running" but currentTime is frozen)
     if (
       this.audioCtx.state === "suspended" ||
-      this.audioCtx.state === "running"
+      this.audioCtx.state === "running" ||
+      this.audioCtx.state === "interrupted"
     ) {
       try {
         await this.audioCtx.resume();

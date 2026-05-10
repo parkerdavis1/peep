@@ -81,6 +81,7 @@ describe("Application Flow", () => {
     appState.zoomLevel = 1;
     appState.isPlaying = false;
     appState.spectrogramData = null; // Prevent compute from actually doing heavy lifting
+    appState.isLoading = false;
 
     target = document.createElement("div");
     document.body.appendChild(target);
@@ -98,9 +99,14 @@ describe("Application Flow", () => {
   });
 
   test("renders splash screen initially", () => {
-    component = mount(Page, { target });
+    try {
+      component = mount(Page, { target });
+    } catch (err) {
+      console.error("Mount error:", err);
+    }
 
     const splash = target.querySelector(".splash");
+    if (!splash) console.log("Target HTML:", target.innerHTML);
     expect(splash).not.toBeNull();
     expect(splash?.textContent).toContain("Open WAV File");
   });
