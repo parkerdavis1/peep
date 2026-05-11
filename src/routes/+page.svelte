@@ -8,10 +8,10 @@
   import Settings from "$lib/components/Settings.svelte";
   import LoadingOverlay from "$lib/components/LoadingOverlay.svelte";
   import { FileHeadphone } from "@lucide/svelte";
-  import Peep2 from "$lib/components/Peep2.svelte";
   import { teardownAudioCtx } from "$lib/audio/playback.ts";
+  import PeepBird from "$lib/components/PeepBird.svelte";
 
-  const title = "Peep";
+  const title = "peep";
 
   // Whether a file is loaded and the editor should be shown
   let fileLoaded = $derived(appState.audioBuffer !== null);
@@ -138,7 +138,10 @@
 
 {#if !fileLoaded}
   <div class="splash">
-    <Peep2 />
+    <div class="title-container">
+      <h1 class="font-title">{title}</h1>
+      <PeepBird size={90} />
+    </div>
     <p class="sub-title">A web app to simplify audio editing for eBird</p>
     <label for="fileInput" class="file-button">Open WAV File</label>
   </div>
@@ -147,7 +150,10 @@
 {#if fileLoaded}
   <div class="container">
     <header>
-      <Peep2 size={4} />
+      <div class="title-container">
+        <h1 class="font-title">{title}</h1>
+        <PeepBird size={46} />
+      </div>
 
       <div class="file-section">
         <label
