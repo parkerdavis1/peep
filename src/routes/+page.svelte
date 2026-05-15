@@ -181,7 +181,7 @@
       </div>
       <Settings />
       <div class="save-section">
-        <button class="save-btn" onclick={handleSave}>Save</button>
+        <button class="save-btn" onclick={handleSave}>Export</button>
       </div>
     </div>
   </div>

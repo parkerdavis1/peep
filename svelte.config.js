@@ -1,3 +1,4 @@
+import { mdsvex } from "mdsvex";
 import adapter from "@sveltejs/adapter-static";
 
 export default {
@@ -10,4 +11,6 @@ export default {
       strict: true,
     }),
   },
+  preprocess: [mdsvex({ extensions: [".svx", ".md"] })],
+  extensions: [".svelte", ".svx", ".md"],
 };
