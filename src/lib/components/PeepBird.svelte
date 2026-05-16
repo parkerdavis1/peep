@@ -1,10 +1,21 @@
 <script lang="ts">
-  const { size = 100, peepStrokeWidth = 10, altText = "Peep" } = $props();
+  const {
+    size = 100,
+    peepStrokeWidth = 10,
+    altText = "Peep",
+    class: className = "",
+  } = $props();
   const width = $derived(size);
   const height = $derived(size);
 </script>
 
-<svg {width} {height} viewBox="0 0 394 327" xmlns="http://www.w3.org/2000/svg">
+<svg
+  {width}
+  {height}
+  class={className}
+  viewBox="0 0 394 327"
+  xmlns="http://www.w3.org/2000/svg"
+>
   <g id="Group">
     <path
       id="Path"

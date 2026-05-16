@@ -39,24 +39,34 @@
 
     try {
       const arrayBuf = await file.arrayBuffer();
-      appState.audioBuffer = await appState.audioCtx!.decodeAudioData(arrayBuf);
-      appState.trimStart = 0;
-      appState.trimEnd = 1;
-      appState.markerPos = 0;
-      appState.zoomLevel = 1;
-
-      appState.loadingText = "Computing spectrogram...";
-      // Yield to let the browser paint the loading message before blocking compute()
-      await new Promise<void>((r) => setTimeout(r, 0));
-
-      SpectrogramLib.compute();
-      Playback.updateMarker();
-      appState.isLoading = false;
+      // If no view transitions available, just do the stuff...
+      if (!document.startViewTransition) {
+        await loadSpectrogram(arrayBuf);
+        return;
+      }
+      // But if you got view transitions, come on let's GO
+      document.startViewTransition(async () => await loadSpectrogram(arrayBuf));
     } catch (err) {
       appState.isLoading = false;
       alert("Error loading file: " + (err as Error).message);
       console.error(err);
     }
+  }
+
+  async function loadSpectrogram(arrayBuf: ArrayBuffer) {
+    appState.audioBuffer = await appState.audioCtx!.decodeAudioData(arrayBuf);
+    appState.trimStart = 0;
+    appState.trimEnd = 1;
+    appState.markerPos = 0;
+    appState.zoomLevel = 1;
+
+    appState.loadingText = "Computing spectrogram...";
+    // Yield to let the browser paint the loading message before blocking compute()
+    await new Promise<void>((r) => setTimeout(r, 0));
+
+    SpectrogramLib.compute();
+    Playback.updateMarker();
+    appState.isLoading = false;
   }
 
   function zoomIn(): void {
