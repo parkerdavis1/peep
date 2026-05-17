@@ -1,10 +1,11 @@
 <script lang="ts">
   let { children } = $props();
   import { ArrowLeft } from "@lucide/svelte";
+  import PeepBird from "$lib/components/PeepBird.svelte";
 </script>
 
 <svelte:head>
-  <title>about peep</title>
+  <title>About Peep</title>
 </svelte:head>
 
 <main class="about-main flow">
@@ -12,6 +13,9 @@
     <ArrowLeft size={16} />
     Back to peep
   </a>
+  <div class="bird">
+    <PeepBird size={128} class="peep-logo" />
+  </div>
   {@render children()}
 </main>
 
@@ -20,5 +24,9 @@
     display: flex;
     align-items: center;
     gap: 0.25em;
+  }
+
+  .bird {
+    float: right;
   }
 </style>

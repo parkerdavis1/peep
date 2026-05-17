@@ -5,7 +5,7 @@
 
 <div class="loading-overlay" class:visible={appState.isLoading}>
   <div class="loading-box">
-    <PeepBird size={48} class="peep-logo" />
+    <PeepBird size={64} class="peep-logo" />
     <div>{appState.loadingText}</div>
   </div>
 </div>

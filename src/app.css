@@ -52,6 +52,7 @@
   --save-color: #36824b;
   --save-color-active: #2a653a;
   --buffer-indicator: var(--accent);
+  --shadow-color: #0000001a;
 
   --time-bar-height: 16px;
   --width-m: 500px;
@@ -630,9 +631,12 @@ input[type="checkbox"] {
   .loading-box {
     background: var(--surface);
     border-radius: 12px;
-    padding: 24px 32px;
+    padding: 2rem 3rem;
     text-align: center;
     font-size: 15px;
+    box-shadow:
+      0 20px 25px -5px var(--shadow-color, #0000001a),
+      0 8px 10px -6px var(--shadow-color, #0000001a);
 
     .peep-logo {
       margin: 0 auto 12px;
