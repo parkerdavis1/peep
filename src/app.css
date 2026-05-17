@@ -96,12 +96,19 @@ body {
 }
 
 /* ---- Splash page ---- */
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .splash {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100dvh;
   padding: 24px;
   text-align: center;
 
@@ -647,15 +654,9 @@ input[type="checkbox"] {
 /* About Page */
 
 .about-link-wrap {
-  position: fixed;
-  bottom: 0.5rem;
-  left: 1rem;
-  right: 0;
-}
-
-.about-link-container {
-  max-width: var(--width-lg);
-  margin-inline: auto;
+  text-align: center;
+  padding-bottom: 1.5rem;
+  color: var(--text-secondary);
 }
 
 .about-main {

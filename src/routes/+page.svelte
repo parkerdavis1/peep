@@ -146,60 +146,60 @@
   style="display: none"
 />
 
-{#if !fileLoaded}
-  <div class="splash">
-    <div class="title-container">
-      <h1 class="font-title">{title}</h1>
-      <PeepBird size={90} />
-    </div>
-    <p class="sub-title">A web app to simplify audio editing for eBird</p>
-    <label for="fileInput" class="file-button">Open WAV File</label>
-  </div>
-{/if}
-
-{#if fileLoaded}
-  <div class="container">
-    <header>
+<div class="page">
+  {#if !fileLoaded}
+    <div class="splash">
       <div class="title-container">
         <h1 class="font-title">{title}</h1>
-        <PeepBird size={46} />
+        <PeepBird size={90} />
       </div>
+      <p class="sub-title">A web app to simplify audio editing for eBird</p>
+      <label for="fileInput" class="file-button">Open WAV File</label>
+    </div>
+  {/if}
 
-      <div class="file-section">
-        <label
-          for="fileInput"
-          class="file-button header-button"
-          title="Load new file"><FileHeadphone /></label
-        >
-      </div>
-    </header>
-    <div class="spectrogram-section">
-      <SpectrogramComponent />
-      <div class="below-spectrogram">
-        <div class="time-display">{appState.timeDisplayText}</div>
+  {#if fileLoaded}
+    <div class="container">
+      <header>
+        <div class="title-container">
+          <h1 class="font-title">{title}</h1>
+          <PeepBird size={46} />
+        </div>
 
-        <div class="file-info">{appState.fileInfoText}</div>
-      </div>
+        <div class="file-section">
+          <label
+            for="fileInput"
+            class="file-button header-button"
+            title="Load new file"><FileHeadphone /></label
+          >
+        </div>
+      </header>
+      <div class="spectrogram-section">
+        <SpectrogramComponent />
+        <div class="below-spectrogram">
+          <div class="time-display">{appState.timeDisplayText}</div>
 
-      <div class="playback-controls-container">
-        <PlaybackControls />
-        <div class="zoom-controls">
-          <button class="zoom-btn" onclick={zoomOut}>&minus;</button>
-          <span class="zoom-level">{appState.zoomLevel}x</span>
-          <button class="zoom-btn" onclick={zoomIn}>+</button>
+          <div class="file-info">{appState.fileInfoText}</div>
+        </div>
+
+        <div class="playback-controls-container">
+          <PlaybackControls />
+          <div class="zoom-controls">
+            <button class="zoom-btn" onclick={zoomOut}>&minus;</button>
+            <span class="zoom-level">{appState.zoomLevel}x</span>
+            <button class="zoom-btn" onclick={zoomIn}>+</button>
+          </div>
+        </div>
+        <Settings />
+        <div class="save-section">
+          <button class="save-btn" onclick={handleSave}>Export</button>
         </div>
       </div>
-      <Settings />
-      <div class="save-section">
-        <button class="save-btn" onclick={handleSave}>Export</button>
-      </div>
     </div>
-  </div>
-{/if}
+  {/if}
 
-<div class="about-link-wrap">
-  <div class="about-link-container">
-    <a href="/about" class="about-link">About</a>
+  <div class="about-link-wrap">
+    <a href="/about" class="about-link no-underline">About</a>
   </div>
 </div>
 
