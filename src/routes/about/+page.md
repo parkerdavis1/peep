@@ -25,7 +25,7 @@ As you drag the trim handles, a blue 3-second visual buffer appears so you can e
 When audio is stopped, you can tap anywhere on the spectrogram to move the orange playback position. Next time you press play, it will start there.
 
 
-## Keyboard Shortcuts
+### Keyboard Shortcuts
 
 - <kbd>space</kbd> -  play/stop
 - <kbd>up/down</kbd> -  zoom in/out
