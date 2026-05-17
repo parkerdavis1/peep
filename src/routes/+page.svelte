@@ -197,4 +197,10 @@
   </div>
 {/if}
 
+<div class="about-link-wrap">
+  <div class="about-link-container">
+    <a href="/about" class="about-link">About</a>
+  </div>
+</div>
+
 <LoadingOverlay />

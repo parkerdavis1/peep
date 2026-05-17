@@ -1,15 +1,11 @@
 <script lang="ts">
-  // import "../../about.css";
   let { children } = $props();
 </script>
 
 <svelte:head>
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
-  />
+  <title>about peep</title>
 </svelte:head>
 
-<main class="about-main">
+<main class="about-main flow">
   {@render children()}
 </main>
