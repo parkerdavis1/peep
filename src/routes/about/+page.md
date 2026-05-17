@@ -33,6 +33,8 @@ When audio is stopped, you can tap anywhere on the spectrogram to move the orang
 
 All processing is done in the browser. Your audio files never leave your device.
 
+The app is written in TypeScript and Svelte. It is open source under the [GAL license](https://gal.gay/) and the code is available on [GitHub](https://github.com/parkerdavis1/peep).
+
 ## Coffee
 
 Created by me, [Parker Davis](https://parkerdavis.dev). If you enjoy this app, consider [buying me a coffee ☕️](https://ko-fi.com/parkerdavisaz).
