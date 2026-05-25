@@ -2,7 +2,7 @@
 
 **peep** is a web app for editing recordings before uploading to eBird.
 
-It is designed to be a fast and easy way to perform [common editing tasks](https://ebird.freshdesk.com/en/support/solutions/articles/48001064341-audio-preparation-and-upload-guidelines):
+It is a fast and easy way to perform [common editing tasks](https://ebird.freshdesk.com/en/support/solutions/articles/48001064341-audio-preparation-and-upload-guidelines):
 - Trim the beginning and end of the recording
 - Apply a light high-pass filter to remove low-frequency noise
 - Normalize gain to -3dB
