@@ -1,4 +1,4 @@
-# About Peep
+# About peep
 
 **peep** is a web app for editing recordings before uploading to eBird.
 
@@ -9,11 +9,11 @@ It is designed to be a fast and easy way to perform [common editing tasks](https
 
 ## Usage
 
-1. Load an audio file. 
-    - If you are loading audio from the Merlin app, you must first save it to your phone (`Files` on iOS)
+1. Load an audio file
+    - If you are loading audio from the Merlin app, you must first save it to your phone (**`Files`** on iOS)
 2. Drag the <span style="color:var(--handle-color)">red</span> start and end trim handles
-3. Select the options you'd like to apply to your recording (High-pass filter, fades, normalization)
-4. Click `Export` to save the processed WAV file to your phone
+3. Select the options you'd like to apply to your recording (high-pass filter, fades, normalization)
+4. Click **`Export`** to save the processed WAV file to your phone
 5. Upload the edited file to eBird!
 
 ###  Tips & Tricks
@@ -35,6 +35,6 @@ All processing is done in the browser. Your audio files never leave your device.
 
 The app is written in TypeScript and Svelte. It is open source under the [GAL license](https://gal.gay/) and the code is available on [GitHub](https://github.com/parkerdavis1/peep).
 
-## Coffee
+## Credits
 
 Created by me, [Parker Davis](https://parkerdavis.dev). If you enjoy this app, consider [buying me a coffee ☕️](https://ko-fi.com/parkerdavisaz).

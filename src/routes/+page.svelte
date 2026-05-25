@@ -129,7 +129,7 @@
 </script>
 
 <svelte:head>
-  <title>Peep</title>
+  <title>peep</title>
 </svelte:head>
 
 <svelte:document

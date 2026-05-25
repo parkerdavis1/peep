@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-  <title>About Peep</title>
+  <title>About peep</title>
 </svelte:head>
 
 <main class="about-main flow">
