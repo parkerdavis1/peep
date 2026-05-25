@@ -25,7 +25,13 @@
   <meta property="og:locale" content="en_US" />
   <meta property="og:title" content={metadata.title} />
   <meta property="og:description" content={metadata.description} />
-  <meta property="og:image" content="/peep-social.png" />
+  <meta property="og:image" content={metadata.socialImage} />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content={metadata.url} />
+  <meta name="twitter:title" content={metadata.title} />
+  <meta name="twitter:description" content={metadata.description} />
+  <meta name="twitter:image" content={metadata.socialImage} />
 </svelte:head>
 
 {@render children()}

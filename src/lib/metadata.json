@@ -1,5 +1,6 @@
 {
   "title": "peep",
   "description": "A web app to simplify audio editing for eBird",
-  "url": "https://peep.parker.town"
+  "url": "https://peep.parker.town",
+  "socialImage": "/peep-social.png"
 }
