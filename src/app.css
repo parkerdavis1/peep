@@ -256,6 +256,7 @@ header {
   overflow-y: hidden;
   touch-action: pan-x;
   -webkit-overflow-scrolling: touch;
+  outline: none;
 }
 
 .spectrogram-inner {
@@ -263,6 +264,8 @@ header {
   height: var(--spectrogram-height);
   min-width: 100%;
   overflow: hidden;
+  user-select: none;
+  outline: none;
 }
 
 /* ---- Time ruler ---- */
@@ -608,7 +611,6 @@ input[type="range"] {
   height: 6px;
   background: var(--border);
   border-radius: 3px;
-  outline: none;
 
   &::-webkit-slider-thumb {
     -webkit-appearance: none;

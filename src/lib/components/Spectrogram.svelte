@@ -256,6 +256,7 @@
       );
       updateMarker();
     }
+    innerEl.blur();
   }
 </script>
 
