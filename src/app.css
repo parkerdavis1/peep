@@ -31,7 +31,8 @@
 :root {
   color-scheme: light dark;
 
-  --bg: #cde8f8;
+  --bg: #f2fafd;
+  --surface-flat: rgb(255 255 255 / 0.97);
   --surface: rgba(255, 255, 255, 0.55);
   --text: #222;
   --text-secondary: #666;
@@ -68,6 +69,7 @@
 
   @media (prefers-color-scheme: dark) {
     --bg: #0d1a27;
+    --surface-flat: rgb(42 42 42 / 0.98);
     --surface: rgba(255, 255, 255, 0.07);
     --text: #fff;
     --text-secondary: #aaa;
@@ -93,18 +95,7 @@ html,
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background:
-    radial-gradient(
-      ellipse at 20% 20%,
-      color-mix(in srgb, var(--accent) 18%, var(--bg)),
-      var(--bg) 60%
-    ),
-    radial-gradient(
-      ellipse at 80% 80%,
-      color-mix(in srgb, var(--accent) 12%, var(--bg)),
-      transparent 60%
-    );
-  background-attachment: fixed;
+  background: var(--bg);
   color: var(--text);
   font-size: 15px;
   line-height: 1.4;
@@ -685,7 +676,7 @@ input[type="checkbox"] {
   }
 
   .loading-box {
-    background: rgb(255 255 255 / 75%);
+    background: var(--surface-flat);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);
