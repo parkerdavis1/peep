@@ -55,7 +55,7 @@
   --shadow-color: rgba(20, 60, 100, 0.12);
   --glass-shadow:
     0 8px 32px var(--shadow-color), 0 2px 8px rgba(20, 60, 100, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
   --glass-border: rgba(255, 255, 255, 0.65);
   --glass-blur: blur(20px) saturate(1.8);
 
@@ -196,9 +196,7 @@ header {
   border: 1px solid var(--glass-border);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  box-shadow:
-    0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: var(--glass-shadow);
 
   &:active {
     background: var(--accent-active);
@@ -281,7 +279,7 @@ header {
   overflow: hidden;
   user-select: none;
   pointer-events: none;
-  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  background: var(--surface);
 }
 
 .time-tick {
@@ -489,6 +487,12 @@ header {
   &:active {
     background: var(--button-active);
   }
+
+  span {
+    margin: 0;
+    padding: 0;
+    transform: translateY(-1px);
+  }
 }
 
 .zoom-level {
@@ -519,13 +523,8 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition:
-    background 0.15s,
-    box-shadow 0.15s;
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
-    0 8px 24px color-mix(in srgb, var(--accent) 45%, transparent),
-    0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background 0.15s;
+  box-shadow: var(--glass-shadow);
 
   &:active {
     background: var(--accent-active);
@@ -656,9 +655,7 @@ input[type="checkbox"] {
   transition:
     background 0.15s,
     box-shadow 0.15s;
-  box-shadow:
-    0 4px 20px color-mix(in srgb, var(--save-color) 40%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: var(--glass-shadow);
 
   &:active {
     background: var(--save-color-active);
@@ -688,7 +685,7 @@ input[type="checkbox"] {
   }
 
   .loading-box {
-    background: var(--surface);
+    background: rgb(255 255 255 / 75%);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--glass-border);

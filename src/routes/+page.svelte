@@ -185,9 +185,13 @@
         <div class="playback-controls-container">
           <PlaybackControls />
           <div class="zoom-controls">
-            <button class="zoom-btn" onclick={zoomOut}>&minus;</button>
+            <button class="zoom-btn" onclick={zoomOut}>
+              <span>&minus;</span>
+            </button>
             <span class="zoom-level">{appState.zoomLevel}x</span>
-            <button class="zoom-btn" onclick={zoomIn}>+</button>
+            <button class="zoom-btn" onclick={zoomIn}>
+              <span>+</span>
+            </button>
           </div>
         </div>
         <Settings />
