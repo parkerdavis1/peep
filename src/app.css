@@ -31,8 +31,8 @@
 :root {
   color-scheme: light dark;
 
-  --bg: #f2fafd;
-  --surface: #ffffff;
+  --bg: #cde8f8;
+  --surface: rgba(255, 255, 255, 0.55);
   --text: #222;
   --text-secondary: #666;
   --accent: #40718f;
@@ -42,8 +42,8 @@
     --accent-hover: hsl(from var(--accent) h s calc(l + 5));
     --accent-active: hsl(from var(--accent) h s calc(l - 5));
   }
-  --border: #ddd;
-  --button-active: #eee;
+  --border: rgba(200, 220, 235, 0.5);
+  --button-active: rgba(220, 235, 245, 0.7);
   --trim-overlay: rgba(150, 150, 150, 0.65);
   --handle-color: #d44;
   --cursor-color: #40718f;
@@ -52,30 +52,40 @@
   --save-color: #36824b;
   --save-color-active: #2a653a;
   --buffer-indicator: var(--accent);
-  --shadow-color: #0000001a;
+  --shadow-color: rgba(20, 60, 100, 0.12);
+  --glass-shadow:
+    0 8px 32px var(--shadow-color), 0 2px 8px rgba(20, 60, 100, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-blur: blur(20px) saturate(1.8);
 
   --time-bar-height: 16px;
   --width-m: 500px;
   --width-lg: 800px;
-  --border-radius: 8px;
+  --border-radius: 14px;
   --spectrogram-height: 200px;
   --freq-axis-width: 20px;
 
   @media (prefers-color-scheme: dark) {
-    --bg: #15202b;
-    --surface: #2a2a2a;
+    --bg: #0d1a27;
+    --surface: rgba(255, 255, 255, 0.07);
     --text: #fff;
     --text-secondary: #aaa;
     --accent: #6091b3;
     --accent-active: #4a718f;
-    --border: #444;
-    --button-active: #111;
+    --border: rgba(255, 255, 255, 0.12);
+    --button-active: rgba(255, 255, 255, 0.1);
     --trim-overlay: rgba(50, 50, 50, 0.65);
     --handle-color: #e44;
     --cursor-color: #6091b3;
     --marker-color: #f67300;
     --save-color: #2a653a;
     --save-color-active: #1a452a;
+    --shadow-color: rgba(0, 0, 0, 0.35);
+    --glass-shadow:
+      0 8px 32px var(--shadow-color), 0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.14);
   }
 }
 
@@ -83,7 +93,18 @@ html,
 body {
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg);
+  background:
+    radial-gradient(
+      ellipse at 20% 20%,
+      color-mix(in srgb, var(--accent) 18%, var(--bg)),
+      var(--bg) 60%
+    ),
+    radial-gradient(
+      ellipse at 80% 80%,
+      color-mix(in srgb, var(--accent) 12%, var(--bg)),
+      transparent 60%
+    );
+  background-attachment: fixed;
   color: var(--text);
   font-size: 15px;
   line-height: 1.4;
@@ -163,14 +184,21 @@ header {
 .file-button {
   display: inline-block;
   padding: 12px 24px;
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 85%, transparent);
   color: var(--button-text);
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.15s;
-  border: 1px solid var(--border);
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow:
+    0 4px 16px color-mix(in srgb, var(--accent) 30%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 
   &:active {
     background: var(--accent-active);
@@ -188,6 +216,11 @@ header {
   height: 3rem;
   width: 3rem;
   background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--border-radius);
   color: var(--accent);
 
   &:hover {
@@ -215,8 +248,12 @@ header {
   display: flex;
   flex-direction: row;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius);
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
 }
 
 .spectrogram-scroll-wrap {
@@ -244,7 +281,7 @@ header {
   overflow: hidden;
   user-select: none;
   pointer-events: none;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
 }
 
 .time-tick {
@@ -281,8 +318,10 @@ header {
   position: relative;
   flex-shrink: 0;
   width: var(--freq-axis-width);
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--glass-border);
   pointer-events: none;
 
   &::before {
@@ -433,9 +472,12 @@ header {
   --dim: 2.5rem;
   width: var(--dim);
   height: var(--dim);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
   background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
   font-size: 20px;
   font-weight: 600;
   cursor: pointer;
@@ -466,9 +508,9 @@ header {
 }
 
 .play-btn {
-  width: 52px;
-  height: 52px;
-  border: none;
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 50%;
   background: var(--accent);
   color: var(--button-text);
@@ -477,7 +519,13 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+    0 8px 24px color-mix(in srgb, var(--accent) 45%, transparent),
+    0 2px 8px rgba(0, 0, 0, 0.1);
 
   &:active {
     background: var(--accent-active);
@@ -487,9 +535,12 @@ header {
 .rewind-btn {
   width: 40px;
   height: 40px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--border-radius);
   background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
   font-size: 18px;
   cursor: pointer;
   display: flex;
@@ -514,7 +565,10 @@ header {
 /* ---- Settings panel ---- */
 .settings {
   background: var(--surface);
-  border: 1px solid var(--border);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
   border-radius: var(--border-radius);
   padding: 0.5rem 1rem;
   margin: 12px 0;
@@ -594,12 +648,17 @@ input[type="checkbox"] {
   padding: 1rem 2rem;
   background: var(--save-color);
   color: var(--button-text);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+  box-shadow:
+    0 4px 20px color-mix(in srgb, var(--save-color) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 
   &:active {
     background: var(--save-color-active);
@@ -616,7 +675,7 @@ input[type="checkbox"] {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.15);
   z-index: 100;
   align-items: center;
   justify-content: center;
@@ -630,13 +689,14 @@ input[type="checkbox"] {
 
   .loading-box {
     background: var(--surface);
-    border-radius: 12px;
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
     padding: 2rem 3rem;
     text-align: center;
     font-size: 15px;
-    box-shadow:
-      0 20px 25px -5px var(--shadow-color, #0000001a),
-      0 8px 10px -6px var(--shadow-color, #0000001a);
+    box-shadow: var(--glass-shadow);
 
     .peep-logo {
       margin: 0 auto 12px;
