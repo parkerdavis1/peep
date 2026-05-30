@@ -110,6 +110,14 @@
     appState.trimEnd * appState.spectrogramTotalWidth - 2,
   );
 
+  const HIT_AREA_WIDTH = 44;
+  let rightHandleHitOffset = $derived.by(() => {
+    const rightSpace = (1 - appState.trimEnd) * appState.spectrogramTotalWidth;
+    const clipped = Math.max(0, HIT_AREA_WIDTH / 2 - rightSpace);
+    const shiftPct = (clipped / HIT_AREA_WIDTH) * 100;
+    return -(50 + shiftPct);
+  });
+
   let threeSecondWidthPx = $derived(
     appState.audioBuffer && appState.audioBuffer.duration > 0
       ? (3 / appState.audioBuffer.duration) * appState.spectrogramTotalWidth
@@ -335,6 +343,7 @@
         aria-valuemin={0}
         aria-valuemax={1}
         style:left="{handleRightLeft}px"
+        style:--hit-offset="{rightHandleHitOffset}%"
         onpointerdown={handlePointerDownRight}
       ></div>
 

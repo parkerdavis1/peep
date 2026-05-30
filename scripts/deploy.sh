@@ -6,6 +6,6 @@ pnpm build
 
 echo "\ncopying files to droplet..."
 
-rsync -a dist/ droplet:~/static/peep
+rsync -av dist/ droplet:~/static/peep
 
 echo "\n✨ Deployment complete!\n"
