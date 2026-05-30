@@ -46,7 +46,9 @@
   --border: rgba(200, 220, 235, 0.5);
   --button-active: rgba(220, 235, 245, 0.7);
   --trim-overlay: rgba(150, 150, 150, 0.65);
-  --handle-color: #d44;
+  /*--handle-color: #d44;*/
+  --handle-color: hsl(0 69.23% 56.67% / 0.9);
+
   --cursor-color: #40718f;
   --marker-color: #e67300;
   --button-text: #fff;
@@ -78,7 +80,8 @@
     --border: rgba(255, 255, 255, 0.12);
     --button-active: rgba(255, 255, 255, 0.1);
     --trim-overlay: rgba(50, 50, 50, 0.65);
-    --handle-color: #e44;
+    /*--handle-color: #e44;*/
+    --handle-color: hsl(0 83.33% 60% / 0.9);
     --cursor-color: #6091b3;
     --marker-color: #f67300;
     --save-color: #2a653a;
@@ -396,7 +399,7 @@ header {
     height: 28px;
     border-radius: 3px;
     border: 2px solid var(--handle-color);
-    background: var(--surface);
+    background: var(--handle-color);
   }
 }
 
