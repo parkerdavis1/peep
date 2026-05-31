@@ -2,14 +2,14 @@
 
 **peep** is a web app for editing recordings before uploading to eBird.
 
-It is a fast and easy way to perform [common editing tasks](https://ebird.freshdesk.com/en/support/solutions/articles/48001064341-audio-preparation-and-upload-guidelines):
+It is tailor-made to quickly perform [common editing tasks suggested by eBird](https://ebird.freshdesk.com/en/support/solutions/articles/48001064341-audio-preparation-and-upload-guidelines):
 - Trim the beginning and end of the recording
 - Apply a light high-pass filter to remove low-frequency noise
 - Normalize gain to -3dB
 
 ## Usage
 
-1. Load an audio file
+1. Open an audio file
     - If you are loading audio from the Merlin app, you must first save it to your phone (**`Files`** on iOS)
 2. Drag the <span style="color:var(--handle-color)">red</span> start and end trim handles
 3. Select the options you'd like to apply to your recording (high-pass filter, fades, normalization)

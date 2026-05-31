@@ -11,7 +11,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:ui": "vitest --ui",
-    "droplet": "scripts/deploy.sh",
+    "deploy:droplet": "scripts/deploy.sh",
     "prepare": "husky"
   },
   "devDependencies": {
