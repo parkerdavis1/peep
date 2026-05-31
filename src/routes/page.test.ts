@@ -108,7 +108,7 @@ describe("Application Flow", () => {
     const splash = target.querySelector(".splash");
     if (!splash) console.log("Target HTML:", target.innerHTML);
     expect(splash).not.toBeNull();
-    expect(splash?.textContent).toContain("Open WAV File");
+    expect(splash?.textContent).toContain("Open Audio File");
   });
 
   test("transitions to editor and handles zoom when audio buffer is loaded", async () => {

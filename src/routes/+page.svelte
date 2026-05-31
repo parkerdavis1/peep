@@ -32,7 +32,7 @@
     }
     appState.ensureAudioCtx();
     Playback.stop();
-    appState.fileName = file.name.replace(/\.wav$/i, "");
+    appState.fileName = file.name.replace(/\.[^/.]+$/, "");
     appState.fileInfoText = file.name;
     appState.loadingText = "Loading audio...";
     appState.isLoading = true;
@@ -141,7 +141,7 @@
 <input
   type="file"
   id="fileInput"
-  accept=".wav,audio/wav"
+  accept=".wav,.mp3,.m4a,audio/wav,audio/mpeg,audio/mp4,audio/x-m4a"
   onchange={handleFileChange}
   style="display: none"
 />
@@ -154,7 +154,7 @@
         <PeepBird size={90} />
       </div>
       <p class="sub-title">A web app to simplify audio editing for eBird</p>
-      <label for="fileInput" class="file-button">Open WAV File</label>
+      <label for="fileInput" class="file-button">Open Audio File</label>
     </div>
   {/if}
 
