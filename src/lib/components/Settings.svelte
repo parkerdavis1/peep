@@ -28,7 +28,7 @@
         type="range"
         id="hpFreq"
         min="50"
-        max="500"
+        max="250"
         step="10"
         bind:value={appState.hpFreq}
         oninput={handleHpFreqInput}
@@ -54,9 +54,9 @@
       <input
         type="range"
         id="fadeDuration"
-        min="0.5"
-        max="5"
-        step="0.5"
+        min="0.1"
+        max="1"
+        step="0.1"
         bind:value={appState.fadeDuration}
         disabled={!appState.fadeEnabled}
         ondblclick={resetFadeDuration}

@@ -96,11 +96,11 @@ describe("Settings Component", () => {
     component = mount(Settings, { target });
 
     const range = target.querySelector("#fadeDuration") as HTMLInputElement;
-    range.value = "2.5";
+    range.value = "0.5";
     // It binds using `bind:value` which usually reacts to 'input' event
     range.dispatchEvent(new Event("input"));
     await tick();
 
-    expect(appState.fadeDuration).toBe(2.5);
+    expect(appState.fadeDuration).toBe(0.5);
   });
 });
