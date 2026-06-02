@@ -39,7 +39,7 @@
     </div>
   </div>
   <div class="setting-row">
-    <span class="setting-label">Normalize to &minus;3 dB</span>
+    <span class="setting-label">Normalize to -3 dB</span>
     <div class="setting-control">
       <input
         type="checkbox"
