@@ -99,34 +99,155 @@ describe("Audio Processing Pipeline", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// WAV header helpers (shared across encoding tests)
+// ---------------------------------------------------------------------------
+
+function readString(view: DataView, offset: number, len: number): string {
+  let s = "";
+  for (let i = 0; i < len; i++) s += String.fromCharCode(view.getUint8(offset + i));
+  return s;
+}
+
+function makeFilledBuffer(numSamples: number, value: number): AudioBuffer {
+  const ctx = new OfflineAudioContext(1, numSamples, 44100);
+  const buffer = ctx.createBuffer(1, numSamples, 44100);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < numSamples; i++) data[i] = value;
+  return buffer;
+}
+
 describe("WAV Encoding", () => {
+  // ---- 16-bit PCM ----
+
   test("encodeWAV generates valid 16-bit PCM WAV blob", async () => {
     const ctx = new OfflineAudioContext(1, 44100, 44100);
     const buffer = ctx.createBuffer(1, 44100, 44100); // 1 sec, mono
 
-    const blob = encodeWAV(buffer);
+    const blob = encodeWAV(buffer, 16, false);
     expect(blob.type).toBe("audio/wav");
     expect(blob.size).toBe(44 + 44100 * 2); // 44 bytes header + (44100 samples * 1 channel * 2 bytes/sample)
 
     const arrayBuffer = await blob.arrayBuffer();
     const view = new DataView(arrayBuffer);
 
-    // Check RIFF header
-    const riff = String.fromCharCode(
-      view.getUint8(0),
-      view.getUint8(1),
-      view.getUint8(2),
-      view.getUint8(3),
-    );
-    expect(riff).toBe("RIFF");
-
-    // Check WAVE format
-    const wave = String.fromCharCode(
-      view.getUint8(8),
-      view.getUint8(9),
-      view.getUint8(10),
-      view.getUint8(11),
-    );
-    expect(wave).toBe("WAVE");
+    expect(readString(view, 0, 4)).toBe("RIFF");
+    expect(readString(view, 8, 4)).toBe("WAVE");
+    expect(view.getUint16(20, true)).toBe(1);  // PCM format code
+    expect(view.getUint16(34, true)).toBe(16); // bits per sample
   });
+
+  test("encodeWAV 16-bit PCM encodes sample value 0.5 correctly", async () => {
+    const buffer = makeFilledBuffer(1, 0.5);
+    const blob = encodeWAV(buffer, 16, false);
+    const view = new DataView(await blob.arrayBuffer());
+    // 0.5 * 0x7fff = 16383.5 → rounded toward zero = 16383
+    expect(view.getInt16(44, true)).toBe(Math.trunc(0.5 * 0x7fff));
+  });
+
+  // ---- 24-bit PCM ----
+
+  test("encodeWAV generates valid 24-bit PCM WAV blob", async () => {
+    const ctx = new OfflineAudioContext(1, 44100, 44100);
+    const buffer = ctx.createBuffer(1, 44100, 44100);
+
+    const blob = encodeWAV(buffer, 24, false);
+    expect(blob.type).toBe("audio/wav");
+    expect(blob.size).toBe(44 + 44100 * 3); // 3 bytes per sample
+
+    const arrayBuffer = await blob.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+
+    expect(readString(view, 0, 4)).toBe("RIFF");
+    expect(readString(view, 8, 4)).toBe("WAVE");
+    expect(view.getUint16(20, true)).toBe(1);  // PCM format code
+    expect(view.getUint16(34, true)).toBe(24); // bits per sample
+  });
+
+  test("encodeWAV 24-bit PCM encodes sample value 0.5 correctly", async () => {
+    const buffer = makeFilledBuffer(1, 0.5);
+    const blob = encodeWAV(buffer, 24, false);
+    const view = new DataView(await blob.arrayBuffer());
+    // Read 3 little-endian bytes at offset 44 and reconstruct signed int24
+    const lo = view.getUint8(44);
+    const mid = view.getUint8(45);
+    const hi = view.getUint8(46);
+    let int24 = lo | (mid << 8) | (hi << 16);
+    // Sign-extend from 24-bit
+    if (int24 & 0x800000) int24 |= ~0xffffff;
+    // 0.5 * 0x7fffff = 4194303.5 → Math.round = 4194304
+    expect(int24).toBe(Math.round(0.5 * 0x7fffff));
+  });
+
+  // ---- 32-bit IEEE float ----
+
+  test("encodeWAV generates valid 32-bit float WAV blob", async () => {
+    const ctx = new OfflineAudioContext(1, 44100, 44100);
+    const buffer = ctx.createBuffer(1, 44100, 44100);
+
+    const blob = encodeWAV(buffer, 32, true);
+    expect(blob.type).toBe("audio/wav");
+    expect(blob.size).toBe(44 + 44100 * 4); // 4 bytes per sample
+
+    const arrayBuffer = await blob.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+
+    expect(readString(view, 0, 4)).toBe("RIFF");
+    expect(readString(view, 8, 4)).toBe("WAVE");
+    expect(view.getUint16(20, true)).toBe(3);  // IEEE float format code
+    expect(view.getUint16(34, true)).toBe(32); // bits per sample
+  });
+
+  test("encodeWAV 32-bit float preserves exact sample values", async () => {
+    const buffer = makeFilledBuffer(1, 0.5);
+    const blob = encodeWAV(buffer, 32, true);
+    const view = new DataView(await blob.arrayBuffer());
+    // Float32 write is exact for 0.5
+    expect(view.getFloat32(44, true)).toBe(0.5);
+  });
+
+  // ---- 32-bit integer PCM ----
+
+  test("encodeWAV generates valid 32-bit integer PCM WAV blob", async () => {
+    const ctx = new OfflineAudioContext(1, 44100, 44100);
+    const buffer = ctx.createBuffer(1, 44100, 44100);
+
+    const blob = encodeWAV(buffer, 32, false);
+    expect(blob.type).toBe("audio/wav");
+    expect(blob.size).toBe(44 + 44100 * 4); // 4 bytes per sample
+
+    const arrayBuffer = await blob.arrayBuffer();
+    const view = new DataView(arrayBuffer);
+
+    expect(readString(view, 0, 4)).toBe("RIFF");
+    expect(readString(view, 8, 4)).toBe("WAVE");
+    expect(view.getUint16(20, true)).toBe(1);  // PCM format code
+    expect(view.getUint16(34, true)).toBe(32); // bits per sample
+  });
+
+  test("encodeWAV 32-bit integer PCM encodes sample value 0.5 correctly", async () => {
+    const buffer = makeFilledBuffer(1, 0.5);
+    const blob = encodeWAV(buffer, 32, false);
+    const view = new DataView(await blob.arrayBuffer());
+    // 0.5 * 0x7fffffff = 1073741823.5 → Math.round = 1073741824
+    expect(view.getInt32(44, true)).toBe(Math.round(0.5 * 0x7fffffff));
+  });
+});
+
+describe("WAV Encoding — sample rate header", () => {
+  test.each([44100, 48000, 88200, 96000])(
+    "encodeWAV writes correct sample rate %i Hz to WAV header",
+    async (sampleRate) => {
+      const ctx = new OfflineAudioContext(1, sampleRate, sampleRate);
+      const buffer = ctx.createBuffer(1, sampleRate, sampleRate);
+      const blob = encodeWAV(buffer, 16, false);
+      const view = new DataView(await blob.arrayBuffer());
+      // WAV nSamplesPerSec field (offset 24)
+      expect(view.getUint32(24, true)).toBe(sampleRate);
+      // WAV nAvgBytesPerSec field (offset 28) — 16-bit mono = 2 bytes/sample
+      expect(view.getUint32(28, true)).toBe(sampleRate * 2);
+      // Total blob size matches: 44-byte header + (sampleRate samples × 2 bytes)
+      expect(blob.size).toBe(44 + sampleRate * 2);
+    },
+  );
 });

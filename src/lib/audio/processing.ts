@@ -100,17 +100,29 @@ function writeString(view: DataView, offset: number, str: string): void {
 }
 
 /**
- * Encode an AudioBuffer to a 16-bit PCM WAV Blob.
+ * Encode an AudioBuffer to a WAV Blob.
+ *
+ * @param buffer    The rendered AudioBuffer to encode.
+ * @param bitDepth  Output bit depth: 16, 24, or 32.
+ * @param isFloat   When true and bitDepth is 32, writes 32-bit IEEE float
+ *                  (format code 3). Otherwise writes integer PCM (format code 1).
  */
-export function encodeWAV(buffer: AudioBuffer): Blob {
+export function encodeWAV(
+  buffer: AudioBuffer,
+  bitDepth: number,
+  isFloat: boolean,
+): Blob {
   const sr = buffer.sampleRate;
   const numCh = buffer.numberOfChannels;
   const numSamples = buffer.length;
-  const bytesPerSample = 2;
+  const bytesPerSample = bitDepth / 8;
   const blockAlign = numCh * bytesPerSample;
   const byteRate = sr * blockAlign;
   const dataSize = numSamples * blockAlign;
   const totalSize = 44 + dataSize;
+
+  // format code: 3 = IEEE float, 1 = integer PCM
+  const formatCode = isFloat && bitDepth === 32 ? 3 : 1;
 
   const arrayBuf = new ArrayBuffer(totalSize);
   const view = new DataView(arrayBuf);
@@ -123,12 +135,12 @@ export function encodeWAV(buffer: AudioBuffer): Blob {
   // fmt chunk
   writeString(view, 12, "fmt ");
   view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true); // PCM
+  view.setUint16(20, formatCode, true);
   view.setUint16(22, numCh, true);
   view.setUint32(24, sr, true);
   view.setUint32(28, byteRate, true);
   view.setUint16(32, blockAlign, true);
-  view.setUint16(34, 16, true); // bits per sample
+  view.setUint16(34, bitDepth, true);
 
   // data chunk
   writeString(view, 36, "data");
@@ -141,10 +153,30 @@ export function encodeWAV(buffer: AudioBuffer): Blob {
   for (let i = 0; i < numSamples; i++) {
     for (let ch = 0; ch < numCh; ch++) {
       let s = channels[ch][i];
-      if (s > 1) s = 1;
-      if (s < -1) s = -1;
-      view.setInt16(offset, s * 0x7fff, true);
-      offset += 2;
+      // Clamp to [-1, 1] for integer formats (float can exceed this range)
+      if (formatCode === 1) {
+        if (s > 1) s = 1;
+        if (s < -1) s = -1;
+      }
+
+      if (bitDepth === 16) {
+        view.setInt16(offset, Math.trunc(s * 0x7fff), true);
+        offset += 2;
+      } else if (bitDepth === 24) {
+        // DataView has no setInt24 — write 3 bytes little-endian manually
+        const int24 = Math.round(s * 0x7fffff);
+        view.setUint8(offset,     int24 & 0xff);
+        view.setUint8(offset + 1, (int24 >> 8) & 0xff);
+        view.setUint8(offset + 2, (int24 >> 16) & 0xff);
+        offset += 3;
+      } else if (bitDepth === 32 && isFloat) {
+        view.setFloat32(offset, s, true);
+        offset += 4;
+      } else {
+        // 32-bit integer PCM
+        view.setInt32(offset, Math.round(s * 0x7fffffff), true);
+        offset += 4;
+      }
     }
   }
 

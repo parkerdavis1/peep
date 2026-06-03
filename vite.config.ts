@@ -25,6 +25,16 @@ export default defineConfig({
           provider: playwright(),
           headless: true,
         },
+        {
+          browser: "firefox",
+          provider: playwright(),
+          headless: true,
+        },
+        {
+          browser: "webkit",
+          provider: playwright(),
+          headless: true,
+        },
       ],
     },
   },

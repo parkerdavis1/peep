@@ -3,6 +3,7 @@
   import * as Playback from "$lib/audio/playback.ts";
   import * as SpectrogramLib from "$lib/spectrogram/compute.ts";
   import * as Processing from "$lib/audio/processing.ts";
+  import { parseWavFormat } from "$lib/audio/wavFormat.ts";
   import SpectrogramComponent from "$lib/components/Spectrogram.svelte";
   import PlaybackControls from "$lib/components/PlaybackControls.svelte";
   import Settings from "$lib/components/Settings.svelte";
@@ -30,7 +31,6 @@
       alert("File is too large (max 200 MB)");
       return;
     }
-    appState.ensureAudioCtx();
     Playback.stop();
     appState.fileName = file.name.replace(/\.[^/.]+$/, "");
     appState.fileInfoText = file.name;
@@ -54,6 +54,17 @@
   }
 
   async function loadSpectrogram(arrayBuf: ArrayBuffer) {
+    // Detect source bit depth before decodeAudioData discards it.
+    // Falls back to 16-bit PCM for non-WAV (MP3, M4A) or unrecognised formats.
+    const fmt = parseWavFormat(arrayBuf);
+    appState.inputBitDepth  = fmt?.bitDepth   ?? 16;
+    appState.inputIsFloat   = fmt?.isFloat    ?? false;
+    appState.inputSampleRate = fmt?.sampleRate ?? 44100;
+
+    // Create (or recreate) AudioContext at the file's native sample rate so
+    // Safari doesn't resample during decodeAudioData.
+    await appState.ensureAudioCtx(appState.inputSampleRate);
+
     appState.audioBuffer = await appState.audioCtx!.decodeAudioData(arrayBuf);
     appState.trimStart = 0;
     appState.trimEnd = 1;
@@ -91,7 +102,7 @@
 
     try {
       const rendered = await Processing.process();
-      const blob = Processing.encodeWAV(rendered);
+      const blob = Processing.encodeWAV(rendered, appState.inputBitDepth, appState.inputIsFloat);
       Processing.downloadBlob(blob, appState.fileName + "_edited.wav");
       appState.isLoading = false;
     } catch (err) {
