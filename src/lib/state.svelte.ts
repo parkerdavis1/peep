@@ -10,6 +10,10 @@ class AppState {
   audioBuffer = $state<AudioBuffer | null>(null);
   fileName = $state("");
   fileInfoText = $state("");
+  // Source file format — detected from the raw ArrayBuffer before decodeAudioData.
+  // Defaults to 16-bit PCM (used as fallback for lossy formats: MP3, M4A).
+  inputBitDepth: number = 16;
+  inputIsFloat: boolean = false;
 
   // Playback (audio graph nodes — not reactive, updated imperatively)
   isPlaying = $state(false);
