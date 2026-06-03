@@ -105,7 +105,8 @@ describe("Audio Processing Pipeline", () => {
 
 function readString(view: DataView, offset: number, len: number): string {
   let s = "";
-  for (let i = 0; i < len; i++) s += String.fromCharCode(view.getUint8(offset + i));
+  for (let i = 0; i < len; i++)
+    s += String.fromCharCode(view.getUint8(offset + i));
   return s;
 }
 
@@ -133,7 +134,7 @@ describe("WAV Encoding", () => {
 
     expect(readString(view, 0, 4)).toBe("RIFF");
     expect(readString(view, 8, 4)).toBe("WAVE");
-    expect(view.getUint16(20, true)).toBe(1);  // PCM format code
+    expect(view.getUint16(20, true)).toBe(1); // PCM format code
     expect(view.getUint16(34, true)).toBe(16); // bits per sample
   });
 
@@ -160,7 +161,7 @@ describe("WAV Encoding", () => {
 
     expect(readString(view, 0, 4)).toBe("RIFF");
     expect(readString(view, 8, 4)).toBe("WAVE");
-    expect(view.getUint16(20, true)).toBe(1);  // PCM format code
+    expect(view.getUint16(20, true)).toBe(1); // PCM format code
     expect(view.getUint16(34, true)).toBe(24); // bits per sample
   });
 
@@ -194,7 +195,7 @@ describe("WAV Encoding", () => {
 
     expect(readString(view, 0, 4)).toBe("RIFF");
     expect(readString(view, 8, 4)).toBe("WAVE");
-    expect(view.getUint16(20, true)).toBe(3);  // IEEE float format code
+    expect(view.getUint16(20, true)).toBe(3); // IEEE float format code
     expect(view.getUint16(34, true)).toBe(32); // bits per sample
   });
 
@@ -221,7 +222,7 @@ describe("WAV Encoding", () => {
 
     expect(readString(view, 0, 4)).toBe("RIFF");
     expect(readString(view, 8, 4)).toBe("WAVE");
-    expect(view.getUint16(20, true)).toBe(1);  // PCM format code
+    expect(view.getUint16(20, true)).toBe(1); // PCM format code
     expect(view.getUint16(34, true)).toBe(32); // bits per sample
   });
 

@@ -9,12 +9,12 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-  - The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-  - The grantee shall actively support rights for all LGBTQ+ people, respecting
-    their gender identities.
-  - The grantee shall say "be gay, do crime" at least once during use of the
-    software.
+- The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+- The grantee shall actively support rights for all LGBTQ+ people, respecting
+  their gender identities.
+- The grantee shall say "be gay, do crime" at least once during use of the
+  software.
 
 The license is immediately revoked if the grantee supports restricting the
 rights of LGBTQ+ people.

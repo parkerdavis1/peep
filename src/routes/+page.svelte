@@ -57,8 +57,8 @@
     // Detect source bit depth before decodeAudioData discards it.
     // Falls back to 16-bit PCM for non-WAV (MP3, M4A) or unrecognised formats.
     const fmt = parseWavFormat(arrayBuf);
-    appState.inputBitDepth  = fmt?.bitDepth   ?? 16;
-    appState.inputIsFloat   = fmt?.isFloat    ?? false;
+    appState.inputBitDepth = fmt?.bitDepth ?? 16;
+    appState.inputIsFloat = fmt?.isFloat ?? false;
     appState.inputSampleRate = fmt?.sampleRate ?? 44100;
 
     // Create (or recreate) AudioContext at the file's native sample rate so
@@ -102,7 +102,11 @@
 
     try {
       const rendered = await Processing.process();
-      const blob = Processing.encodeWAV(rendered, appState.inputBitDepth, appState.inputIsFloat);
+      const blob = Processing.encodeWAV(
+        rendered,
+        appState.inputBitDepth,
+        appState.inputIsFloat,
+      );
       Processing.downloadBlob(blob, appState.fileName + "_edited.wav");
       appState.isLoading = false;
     } catch (err) {
@@ -152,7 +156,7 @@
 <input
   type="file"
   id="fileInput"
-  accept=".wav,.mp3,.m4a,audio/wav,audio/mpeg,audio/mp4,audio/x-m4a"
+  accept=".wav,audio/wav"
   onchange={handleFileChange}
   style="display: none"
 />

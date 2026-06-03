@@ -165,7 +165,7 @@ export function encodeWAV(
       } else if (bitDepth === 24) {
         // DataView has no setInt24 — write 3 bytes little-endian manually
         const int24 = Math.round(s * 0x7fffff);
-        view.setUint8(offset,     int24 & 0xff);
+        view.setUint8(offset, int24 & 0xff);
         view.setUint8(offset + 1, (int24 >> 8) & 0xff);
         view.setUint8(offset + 2, (int24 >> 16) & 0xff);
         offset += 3;

@@ -127,7 +127,9 @@ class AppState {
             webkitAudioContext?: typeof AudioContext;
           }
         ).webkitAudioContext!;
-      this.audioCtx = sampleRate ? new AudioCtx({ sampleRate }) : new AudioCtx();
+      this.audioCtx = sampleRate
+        ? new AudioCtx({ sampleRate })
+        : new AudioCtx();
     }
     // Always attempt to resume as a fix for iOS Safari zombie AudioContexts
     // (where state is "running" but currentTime is frozen)
