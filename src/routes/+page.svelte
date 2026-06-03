@@ -31,7 +31,6 @@
       alert("File is too large (max 200 MB)");
       return;
     }
-    appState.ensureAudioCtx();
     Playback.stop();
     appState.fileName = file.name.replace(/\.[^/.]+$/, "");
     appState.fileInfoText = file.name;
@@ -58,8 +57,13 @@
     // Detect source bit depth before decodeAudioData discards it.
     // Falls back to 16-bit PCM for non-WAV (MP3, M4A) or unrecognised formats.
     const fmt = parseWavFormat(arrayBuf);
-    appState.inputBitDepth = fmt?.bitDepth ?? 16;
-    appState.inputIsFloat  = fmt?.isFloat  ?? false;
+    appState.inputBitDepth  = fmt?.bitDepth   ?? 16;
+    appState.inputIsFloat   = fmt?.isFloat    ?? false;
+    appState.inputSampleRate = fmt?.sampleRate ?? 44100;
+
+    // Create (or recreate) AudioContext at the file's native sample rate so
+    // Safari doesn't resample during decodeAudioData.
+    await appState.ensureAudioCtx(appState.inputSampleRate);
 
     appState.audioBuffer = await appState.audioCtx!.decodeAudioData(arrayBuf);
     appState.trimStart = 0;

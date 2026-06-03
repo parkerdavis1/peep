@@ -11,9 +11,10 @@ class AppState {
   fileName = $state("");
   fileInfoText = $state("");
   // Source file format — detected from the raw ArrayBuffer before decodeAudioData.
-  // Defaults to 16-bit PCM (used as fallback for lossy formats: MP3, M4A).
+  // Defaults to 16-bit PCM / 44100 Hz (fallback for lossy formats: MP3, M4A).
   inputBitDepth: number = 16;
   inputIsFloat: boolean = false;
+  inputSampleRate: number = 44100;
 
   // Playback (audio graph nodes — not reactive, updated imperatively)
   isPlaying = $state(false);
@@ -100,15 +101,18 @@ class AppState {
   });
 
   /**
-   * Ensure AudioContext exists and is running.
-   * Must be called from a user gesture on iOS.
+   * Ensure AudioContext exists, is running, and matches the requested sample rate.
+   * If the current context has a different sample rate it will be closed and
+   * recreated.  Must be called from a user gesture on iOS.
    */
-  async ensureAudioCtx(): Promise<void> {
-    if (
+  async ensureAudioCtx(sampleRate?: number): Promise<void> {
+    const needsNew =
       !this.audioCtx ||
       this.audioCtx.state === "closed" ||
-      this.audioCtx.state === "interrupted"
-    ) {
+      this.audioCtx.state === "interrupted" ||
+      (sampleRate !== undefined && this.audioCtx.sampleRate !== sampleRate);
+
+    if (needsNew) {
       if (this.audioCtx) {
         try {
           this.audioCtx.close();
@@ -123,7 +127,7 @@ class AppState {
             webkitAudioContext?: typeof AudioContext;
           }
         ).webkitAudioContext!;
-      this.audioCtx = new AudioCtx();
+      this.audioCtx = sampleRate ? new AudioCtx({ sampleRate }) : new AudioCtx();
     }
     // Always attempt to resume as a fix for iOS Safari zombie AudioContexts
     // (where state is "running" but currentTime is frozen)

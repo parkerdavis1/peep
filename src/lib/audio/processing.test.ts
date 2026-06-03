@@ -233,3 +233,21 @@ describe("WAV Encoding", () => {
     expect(view.getInt32(44, true)).toBe(Math.round(0.5 * 0x7fffffff));
   });
 });
+
+describe("WAV Encoding — sample rate header", () => {
+  test.each([44100, 48000, 88200, 96000])(
+    "encodeWAV writes correct sample rate %i Hz to WAV header",
+    async (sampleRate) => {
+      const ctx = new OfflineAudioContext(1, sampleRate, sampleRate);
+      const buffer = ctx.createBuffer(1, sampleRate, sampleRate);
+      const blob = encodeWAV(buffer, 16, false);
+      const view = new DataView(await blob.arrayBuffer());
+      // WAV nSamplesPerSec field (offset 24)
+      expect(view.getUint32(24, true)).toBe(sampleRate);
+      // WAV nAvgBytesPerSec field (offset 28) — 16-bit mono = 2 bytes/sample
+      expect(view.getUint32(28, true)).toBe(sampleRate * 2);
+      // Total blob size matches: 44-byte header + (sampleRate samples × 2 bytes)
+      expect(blob.size).toBe(44 + sampleRate * 2);
+    },
+  );
+});

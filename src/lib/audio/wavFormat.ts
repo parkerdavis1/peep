@@ -11,6 +11,7 @@
 export type WavFormat = {
   bitDepth: number;
   isFloat: boolean;
+  sampleRate: number;
 };
 
 const WAVE_FORMAT_PCM = 0x0001;
@@ -59,13 +60,14 @@ export function parseWavFormat(buf: ArrayBuffer): WavFormat | null {
 
       const formatTag = view.getUint16(offset + 8, true);
       const bitDepth = view.getUint16(offset + 22, true);
+      const sampleRate = view.getUint32(offset + 12, true);
 
       if (formatTag === WAVE_FORMAT_PCM) {
-        return { bitDepth, isFloat: false };
+        return { bitDepth, isFloat: false, sampleRate };
       }
 
       if (formatTag === WAVE_FORMAT_IEEE_FLOAT) {
-        return { bitDepth, isFloat: true };
+        return { bitDepth, isFloat: true, sampleRate };
       }
 
       if (formatTag === WAVE_FORMAT_EXTENSIBLE) {
@@ -87,10 +89,10 @@ export function parseWavFormat(buf: ArrayBuffer): WavFormat | null {
         const subFormatTag = view.getUint16(offset + 8 + 24, true);
 
         if (subFormatTag === WAVE_FORMAT_PCM) {
-          return { bitDepth, isFloat: false };
+          return { bitDepth, isFloat: false, sampleRate };
         }
         if (subFormatTag === WAVE_FORMAT_IEEE_FLOAT) {
-          return { bitDepth, isFloat: true };
+          return { bitDepth, isFloat: true, sampleRate };
         }
 
         return null; // unknown extensible sub-format

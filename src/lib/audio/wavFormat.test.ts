@@ -9,7 +9,7 @@ import { parseWavFormat } from "./wavFormat";
  * Build a standard WAV header (44 bytes, fmt chunk size = 16).
  * Used for PCM (formatTag=1) and IEEE float (formatTag=3).
  */
-function makeStandardWav(formatTag: number, bitDepth: number): ArrayBuffer {
+function makeStandardWav(formatTag: number, bitDepth: number, sampleRate = 44100): ArrayBuffer {
   const buf = new ArrayBuffer(44);
   const view = new DataView(buf);
 
@@ -29,13 +29,13 @@ function makeStandardWav(formatTag: number, bitDepth: number): ArrayBuffer {
   view.setUint8(13, 0x6d); // m
   view.setUint8(14, 0x74); // t
   view.setUint8(15, 0x20); // (space)
-  view.setUint32(16, 16, true);          // fmt chunk size
-  view.setUint16(20, formatTag, true);   // wFormatTag
-  view.setUint16(22, 1, true);           // nChannels
-  view.setUint32(24, 44100, true);       // nSamplesPerSec
-  view.setUint32(28, 44100 * (bitDepth / 8), true); // nAvgBytesPerSec
-  view.setUint16(32, bitDepth / 8, true); // nBlockAlign
-  view.setUint16(34, bitDepth, true);    // wBitsPerSample
+  view.setUint32(16, 16, true);             // fmt chunk size
+  view.setUint16(20, formatTag, true);      // wFormatTag
+  view.setUint16(22, 1, true);              // nChannels
+  view.setUint32(24, sampleRate, true);     // nSamplesPerSec
+  view.setUint32(28, sampleRate * (bitDepth / 8), true); // nAvgBytesPerSec
+  view.setUint16(32, bitDepth / 8, true);   // nBlockAlign
+  view.setUint16(34, bitDepth, true);       // wBitsPerSample
 
   // data chunk (empty)
   view.setUint8(36, 0x64); // d
@@ -52,7 +52,7 @@ function makeStandardWav(formatTag: number, bitDepth: number): ArrayBuffer {
  * Used for multi-channel or >16-bit files from field recorders.
  * subFormatTag: 1 = PCM, 3 = IEEE float
  */
-function makeExtensibleWav(bitDepth: number, subFormatTag: number): ArrayBuffer {
+function makeExtensibleWav(bitDepth: number, subFormatTag: number, sampleRate = 48000): ArrayBuffer {
   const buf = new ArrayBuffer(68);
   const view = new DataView(buf);
 
@@ -72,13 +72,13 @@ function makeExtensibleWav(bitDepth: number, subFormatTag: number): ArrayBuffer 
   view.setUint8(13, 0x6d); // m
   view.setUint8(14, 0x74); // t
   view.setUint8(15, 0x20); // (space)
-  view.setUint32(16, 40, true);          // fmt chunk size = 40 for extensible
-  view.setUint16(20, 0xfffe, true);      // wFormatTag = WAVE_FORMAT_EXTENSIBLE
-  view.setUint16(22, 1, true);           // nChannels
-  view.setUint32(24, 48000, true);       // nSamplesPerSec
-  view.setUint32(28, 48000 * (bitDepth / 8), true); // nAvgBytesPerSec
-  view.setUint16(32, bitDepth / 8, true); // nBlockAlign
-  view.setUint16(34, bitDepth, true);    // wBitsPerSample
+  view.setUint32(16, 40, true);              // fmt chunk size = 40 for extensible
+  view.setUint16(20, 0xfffe, true);          // wFormatTag = WAVE_FORMAT_EXTENSIBLE
+  view.setUint16(22, 1, true);               // nChannels
+  view.setUint32(24, sampleRate, true);      // nSamplesPerSec
+  view.setUint32(28, sampleRate * (bitDepth / 8), true); // nAvgBytesPerSec
+  view.setUint16(32, bitDepth / 8, true);    // nBlockAlign
+  view.setUint16(34, bitDepth, true);        // wBitsPerSample
   view.setUint16(36, 22, true);          // cbSize = 22 (size of extension)
   view.setUint16(38, bitDepth, true);    // wValidBitsPerSample
   view.setUint32(40, 0, true);           // dwChannelMask (0 = default)
@@ -117,42 +117,60 @@ function makeExtensibleWav(bitDepth: number, subFormatTag: number): ArrayBuffer 
 // ---------------------------------------------------------------------------
 
 describe("parseWavFormat — standard PCM / float", () => {
-  test("returns { bitDepth: 16, isFloat: false } for 16-bit PCM WAV", () => {
+  test("returns correct format for 16-bit PCM WAV", () => {
     const buf = makeStandardWav(1, 16);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 16, isFloat: false });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 16, isFloat: false, sampleRate: 44100 });
   });
 
-  test("returns { bitDepth: 24, isFloat: false } for 24-bit PCM WAV", () => {
+  test("returns correct format for 24-bit PCM WAV", () => {
     const buf = makeStandardWav(1, 24);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 24, isFloat: false });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 24, isFloat: false, sampleRate: 44100 });
   });
 
-  test("returns { bitDepth: 32, isFloat: false } for 32-bit integer PCM WAV", () => {
+  test("returns correct format for 32-bit integer PCM WAV", () => {
     const buf = makeStandardWav(1, 32);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: false });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: false, sampleRate: 44100 });
   });
 
-  test("returns { bitDepth: 32, isFloat: true } for 32-bit IEEE float WAV", () => {
+  test("returns correct format for 32-bit IEEE float WAV", () => {
     const buf = makeStandardWav(3, 32);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: true });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: true, sampleRate: 44100 });
   });
 });
 
 describe("parseWavFormat — WAVE_FORMAT_EXTENSIBLE", () => {
-  test("returns { bitDepth: 24, isFloat: false } for extensible 24-bit PCM WAV", () => {
+  test("returns correct format for extensible 24-bit PCM WAV", () => {
     const buf = makeExtensibleWav(24, 1);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 24, isFloat: false });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 24, isFloat: false, sampleRate: 48000 });
   });
 
-  test("returns { bitDepth: 32, isFloat: true } for extensible 32-bit float WAV", () => {
+  test("returns correct format for extensible 32-bit float WAV", () => {
     const buf = makeExtensibleWav(32, 3);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: true });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: true, sampleRate: 48000 });
   });
 
-  test("returns { bitDepth: 32, isFloat: false } for extensible 32-bit PCM WAV", () => {
+  test("returns correct format for extensible 32-bit PCM WAV", () => {
     const buf = makeExtensibleWav(32, 1);
-    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: false });
+    expect(parseWavFormat(buf)).toEqual({ bitDepth: 32, isFloat: false, sampleRate: 48000 });
   });
+});
+
+describe("parseWavFormat — sample rate", () => {
+  test.each([44100, 48000, 88200, 96000])(
+    "returns sampleRate %i for standard PCM WAV",
+    (sr) => {
+      const buf = makeStandardWav(1, 24, sr);
+      expect(parseWavFormat(buf)?.sampleRate).toBe(sr);
+    },
+  );
+
+  test.each([48000, 96000])(
+    "returns sampleRate %i for extensible WAV",
+    (sr) => {
+      const buf = makeExtensibleWav(24, 1, sr);
+      expect(parseWavFormat(buf)?.sampleRate).toBe(sr);
+    },
+  );
 });
 
 describe("parseWavFormat — null / fallback cases", () => {
