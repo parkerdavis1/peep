@@ -160,11 +160,13 @@ export function encodeWAV(
       }
 
       if (bitDepth === 16) {
-        view.setInt16(offset, Math.trunc(s * 0x7fff), true);
+        // 1 sign bit + 15 magnitude bits; scale by 2^15, clamp to stay in range
+        view.setInt16(offset, Math.max(-32768, Math.min(32767, Math.round(s * 2 ** 15))), true);
         offset += 2;
       } else if (bitDepth === 24) {
+        // 1 sign bit + 23 magnitude bits; scale by 2^23, clamp to stay in range
         // DataView has no setInt24 — write 3 bytes little-endian manually
-        const int24 = Math.round(s * 0x7fffff);
+        const int24 = Math.max(-8388608, Math.min(8388607, Math.round(s * 2 ** 23)));
         view.setUint8(offset, int24 & 0xff);
         view.setUint8(offset + 1, (int24 >> 8) & 0xff);
         view.setUint8(offset + 2, (int24 >> 16) & 0xff);
@@ -173,8 +175,8 @@ export function encodeWAV(
         view.setFloat32(offset, s, true);
         offset += 4;
       } else {
-        // 32-bit integer PCM
-        view.setInt32(offset, Math.round(s * 0x7fffffff), true);
+        // 32-bit integer PCM: 1 sign bit + 31 magnitude bits; scale by 2^31
+        view.setInt32(offset, Math.max(-2147483648, Math.min(2147483647, Math.round(s * 2 ** 31))), true);
         offset += 4;
       }
     }

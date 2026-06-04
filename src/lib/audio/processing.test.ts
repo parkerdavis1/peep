@@ -142,8 +142,8 @@ describe("WAV Encoding", () => {
     const buffer = makeFilledBuffer(1, 0.5);
     const blob = encodeWAV(buffer, 16, false);
     const view = new DataView(await blob.arrayBuffer());
-    // 0.5 * 0x7fff = 16383.5 → rounded toward zero = 16383
-    expect(view.getInt16(44, true)).toBe(Math.trunc(0.5 * 0x7fff));
+    // 0.5 * 2^15 = 16384.0 → rounds to 16384 (correct inverse of browser normalisation)
+    expect(view.getInt16(44, true)).toBe(Math.round(0.5 * 2 ** 15));
   });
 
   // ---- 24-bit PCM ----
