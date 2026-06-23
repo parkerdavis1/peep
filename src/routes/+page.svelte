@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { appState } from "$lib/state.svelte.ts";
   import * as Playback from "$lib/audio/playback.ts";
   import * as SpectrogramLib from "$lib/spectrogram/compute.ts";
@@ -17,6 +18,29 @@
   // Whether a file is loaded and the editor should be shown
   let fileLoaded = $derived(appState.audioBuffer !== null);
 
+  onMount(async () => {
+    await checkSharedFile();
+  });
+
+  // Pick up a file shared via the Web Share Target API.
+  // The service worker intercepts POST /share-target/, stores the file in the
+  // Cache API, then redirects here. We retrieve and delete it on load.
+  async function checkSharedFile() {
+    if (!("caches" in window)) return;
+    try {
+      const cache = await caches.open("share-target-v1");
+      const response = await cache.match("/shared-audio");
+      if (!response) return;
+      const blob = await response.blob();
+      const name = response.headers.get("X-File-Name") ?? "shared-audio.wav";
+      const file = new File([blob], name, { type: blob.type });
+      await cache.delete("/shared-audio");
+      await loadFile(file);
+    } catch (err) {
+      console.error("Error loading shared file:", err);
+    }
+  }
+
   function handleVisibilityChange() {
     if (document.visibilityState === "hidden") {
       Playback.stop(true);
@@ -24,9 +48,7 @@
     }
   }
 
-  async function handleFileChange(e: Event) {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (!file) return;
+  async function loadFile(file: File) {
     if (file.size > 200 * 1024 * 1024) {
       alert("File is too large (max 200 MB)");
       return;
@@ -51,6 +73,12 @@
       alert("Error loading file: " + (err as Error).message);
       console.error(err);
     }
+  }
+
+  async function handleFileChange(e: Event) {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    await loadFile(file);
   }
 
   async function loadSpectrogram(arrayBuf: ArrayBuffer) {
